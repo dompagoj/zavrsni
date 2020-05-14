@@ -1,14 +1,28 @@
+#include "libav_wrappers/AVPacket.h"
+#include <iostream>
+
 extern "C"
 {
-#include <libavcodec/avcodec.h>
-#include <libavdevice/avdevice.h>
-#include <libavformat/avformat.h>
-#include <libavutil/avutil.h>
+#include "libavdevice/avdevice.h"
+#include "libavformat/avformat.h"
 }
-
-#include <iostream>
 
 int main()
 {
-    return 0;
+  avdevice_register_all();
+
+  AVFormatContext *FormatContext = avformat_alloc_context();
+
+  constexpr auto FileName = "/dev/video0";
+
+  auto format = "v4l2";
+  auto InputFormat = av_find_input_format(format);
+
+  if (!InputFormat) std::cout << "Input format null!";
+
+  bool test = false;
+
+  avformat_free_context(FormatContext);
+
+  return 0;
 }

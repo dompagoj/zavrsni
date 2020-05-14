@@ -1,21 +1,18 @@
 cmake_minimum_required(VERSION 3.15)
 project(libav_test)
+set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CLANG_COMPILE_FLAGS "-fno-exceptions")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_COMPILE_FLAGS}")
 
-find_path(AVCODEC_INCLUDE_DIR libavcodec/avcodec.h)
-find_library(AVCODEC_LIBRARY avcodec)
+add_subdirectory(lib/FFmpeg)
 
-find_path(AVFORMAT_INCLUDE_DIR libavformat/avformat.h)
-find_library(AVFORMAT_LIBRARY avformat)
+list(APPEND SOURCES
+        libav_wrappers/AVPacket.cpp
+        )
 
-find_path(AVUTIL_INCLUDE_DIR libavutil/avutil.h)
-find_library(AVUTIL_LIBRARY avutil)
+#add_compile_options("$<$<CONFIG:DEBUG>:-DTEST>")
 
-find_path(AVDEVICE_INCLUDE_DIR libavdevice/avdevice.h)
-find_library(AVDEVICE_LIBRARY avdevice)
+add_executable(libav_test main.cpp ${SOURCES} libav_wrappers/AVPacket.h)
 
-add_executable(libav_test main.cpp)
-
-target_link_libraries(libav_test PUBLIC ${AVUTIL_LIBRARY} ${AVFORMAT_LIBRARY} ${AVCODEC_LIBRARY} ${AVDEVICE_LIBRARY})
-target_include_directories(libav_test PUBLIC ${AVCODEC_INCLUDE_DIR} ${AVCODEC_LIBRARY} ${AVUTIL_INCLUDE_DIR} ${AVDEVICE_INCLUDE_DIR})
+target_link_libraries(libav_test FFmpeg)
