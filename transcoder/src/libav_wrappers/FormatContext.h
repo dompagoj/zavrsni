@@ -12,15 +12,12 @@ class FormatContext
 {
 
 public:
-  AVFormatContext *RawContext;
-  FormatContext();
-  explicit FormatContext(bool ShouldAlloc);
+  AVFormatContext *RawContext{nullptr};
+
+  explicit FormatContext(bool ShouldAlloc = true);
   ~FormatContext();
 
-  [[nodiscard]] AVFormatContext *Data() const;
-  [[nodiscard]] AVFormatContext **DataPtr();
-
-  AVFormatContext* operator*() const;
+  AVFormatContext *&Data();
 };
 
 } // namespace AV

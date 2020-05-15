@@ -16,8 +16,7 @@ public:
   Dictionary();
   ~Dictionary();
 
-  [[nodiscard]] AVDictionary *Data() const;
-  AVDictionary **DataPtr();
+  [[nodiscard]] AVDictionary *&Data();
 
   [[nodiscard]] std::optional<std::string_view> Get(std::string_view Key) const;
   std::optional<char *> Get(const char *Key) const;
@@ -25,9 +24,7 @@ public:
   void Set(std::string_view Key, std::string_view Value);
   void Set(const char *Key, const char *Value);
 
-  std::optional<const char *> operator[](const char *key) const;
-
-  AVDictionary *operator*() const;
+  AVDictionary *&operator*();
 };
 
 } // namespace AV

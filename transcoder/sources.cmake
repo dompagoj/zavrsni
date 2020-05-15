@@ -3,6 +3,6 @@ list(APPEND SOURCES
         src/constants.hpp
         src/libav_wrappers/Dictionary.cpp src/libav_wrappers/Dictionary.h
         src/libav_wrappers/FormatContext.cpp src/libav_wrappers/FormatContext.h
-        src/libav_wrappers/Result.cpp src/libav_wrappers/Result.h
+        src/libav_wrappers/Result.h
         src/libav_wrappers/Utils.cpp src/libav_wrappers/Utils.h
         )

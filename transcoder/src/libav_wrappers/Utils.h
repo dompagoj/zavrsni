@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Result.h"
 #include <vector>
 
 struct AVDeviceInfo;
@@ -8,6 +9,6 @@ struct AVInputFormat;
 namespace AV::Utils
 {
 
-std::vector<AVDeviceInfo*> FindAllInputDevices(AVInputFormat *InputFormat);
+AV::Result<std::vector<AVDeviceInfo *>> FindAllInputDevices(AVInputFormat *InputFormat);
 
-}
+} // namespace AV::Utils

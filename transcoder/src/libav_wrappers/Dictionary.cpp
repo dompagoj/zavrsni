@@ -27,8 +27,6 @@ std::optional<char *> AV::Dictionary::Get(const char *Key) const
   return entry->value;
 }
 
-AVDictionary *AV::Dictionary::Data() const { return RawDict; }
-
 void AV::Dictionary::Set(std::string_view Key, std::string_view Value)
 {
   av_dict_set(&RawDict, Key.data(), Value.data(), 0);
@@ -36,6 +34,6 @@ void AV::Dictionary::Set(std::string_view Key, std::string_view Value)
 
 void AV::Dictionary::Set(const char *Key, const char *Value) { av_dict_set(&RawDict, Key, Value, 0); }
 
-AVDictionary **AV::Dictionary::DataPtr() { return &RawDict; }
+AVDictionary *&AV::Dictionary::operator*() { return RawDict; }
 
-AVDictionary *AV::Dictionary::operator*() const { return RawDict; }
+AVDictionary *&AV::Dictionary::Data() { return RawDict; }

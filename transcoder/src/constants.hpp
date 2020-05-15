@@ -6,7 +6,7 @@ constexpr const char *const VIDEO_DRIVER_LINUX = "v4l2";
 constexpr const char *const VIDEO_DRIVER_WINDOWS = "dshow";
 constexpr const char *const VIDEO_DRIVER_OSX = "avfoundation";
 
-constexpr const char *GET_VIDEO_DRIVER()
+consteval const char *GET_VIDEO_DRIVER()
 {
 #ifdef linux
   return VIDEO_DRIVER_LINUX;
