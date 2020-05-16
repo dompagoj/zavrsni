@@ -1,8 +1,3 @@
-extern "C"
-{
-#include <libavcodec/avcodec.h>
-}
-
 #include "Packet.h"
 
 AV::Packet::Packet() : RawPacket() {}

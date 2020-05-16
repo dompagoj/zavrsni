@@ -1,15 +1,20 @@
 #pragma once
 
+extern "C"
+{
+#include <libavcodec/avcodec.h>
+}
+
 namespace AV
 {
 class Packet
 {
 public:
-  struct AVPacket RawPacket;
+  AVPacket *RawPacket;
   Packet();
   ~Packet();
 
-  struct AVPacket *operator*();
+  AVPacket *operator*();
   void Unref();
 
   static AVPacket &GetInstance()

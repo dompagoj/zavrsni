@@ -12,12 +12,7 @@ AV::Result<std::vector<AVDeviceInfo *>> AV::Utils::FindAllInputDevices(AVInputFo
 
   int err2 = avdevice_list_input_sources(InputFormat, nullptr, nullptr, &List);
 
-  if (err2)
-  {
-    printf("Failed to list devices!");
-
-    return err2;
-  }
+  if (err2 < 0) return AV::Error(err2);
 
   std::vector<AVDeviceInfo *> Devices;
 

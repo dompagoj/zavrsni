@@ -3,6 +3,7 @@
 #include "libav_wrappers/FormatContext.h"
 #include "libav_wrappers/Packet.h"
 #include "libav_wrappers/Utils.h"
+#include <iostream>
 
 extern "C"
 {
@@ -19,18 +20,27 @@ int main()
 
   auto Devices = AV::Utils::FindAllInputDevices(InputFormat);
 
-  auto FileName = "/dev/video4";
+  if (Devices.HasError())
+  {
+    std::cout << "FindAllInputDevices failed, Err: " << Devices.Err().Msg.c_str() << std::endl;
+    exit(1);
+  }
+
+  for (auto const &Device : Devices.Data())
+  { printf("Device name: %s | Device description: %s", Device->device_name, Device->device_description); }
+
+  auto FileName = "/dev/video0";
 
   if (!InputFormat)
   {
     printf("Input format not found!, format: %s \n", Constants::GET_VIDEO_DRIVER());
-    return 1;
+    exit(1);
   }
 
   AV::Dictionary Opts;
 
-  Opts.Set("framerate", "30");
-  Opts.Set("video_size", "1280x720");
+  Opts.Set("framerate", "7.5");
+  Opts.Set("video_size", "1280x1024");
 
   avformat_open_input(&Context.Data(), FileName, InputFormat, &Opts.Data());
 
