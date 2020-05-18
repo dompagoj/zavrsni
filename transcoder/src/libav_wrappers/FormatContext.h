@@ -1,9 +1,7 @@
 #pragma once
+struct AVFormatContext;
 
-extern "C"
-{
-#include <libavformat/avformat.h>
-}
+#include "Packet.h"
 
 namespace AV
 {
@@ -12,12 +10,15 @@ class FormatContext
 {
 
 public:
-  AVFormatContext *RawContext{nullptr};
+  AVFormatContext* Ptr{nullptr};
 
   explicit FormatContext(bool ShouldAlloc = true);
   ~FormatContext();
 
-  AVFormatContext *&Data();
+  constexpr AVFormatContext*& Data() { return Ptr; };
+
+  int ReadFrame(AV::StackPacket& Packet) const;
+  [[nodiscard]] StackPacket ReadFrame() const;
 };
 
 } // namespace AV

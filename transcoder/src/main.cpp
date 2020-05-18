@@ -1,9 +1,8 @@
-#include "constants.hpp"
+#include "libav_wrappers/Codec.h"
 #include "libav_wrappers/Dictionary.h"
 #include "libav_wrappers/FormatContext.h"
 #include "libav_wrappers/Packet.h"
 #include "libav_wrappers/Utils.h"
-#include <iostream>
 
 extern "C"
 {
@@ -11,23 +10,13 @@ extern "C"
 #include "libavformat/avformat.h"
 }
 
-int main()
+int main(int argc, char** argv)
 {
-  avdevice_register_all();
+  AV::Utils::RegisterAllDevices();
 
-  AV::FormatContext Context;
-  auto InputFormat = av_find_input_format(Constants::GET_VIDEO_DRIVER());
+  auto InputFormat = AV::Utils::FindInputFormat(Constants::GET_VIDEO_DRIVER()).Expect("Failed to find input format");
 
-  auto Devices = AV::Utils::FindAllInputDevices(InputFormat);
-
-  if (Devices.HasError())
-  {
-    std::cout << "FindAllInputDevices failed, Err: " << Devices.Err().Msg.c_str() << std::endl;
-    exit(1);
-  }
-
-  for (auto const &Device : Devices.Data())
-  { printf("Device name: %s | Device description: %s", Device->device_name, Device->device_description); }
+  auto Devices = AV::Utils::FindAllInputDevices(InputFormat).Expect("Failed to find all input devices");
 
   auto FileName = "/dev/video0";
 
@@ -39,23 +28,33 @@ int main()
 
   AV::Dictionary Opts;
 
-  Opts.Set("framerate", "7.5");
-  Opts.Set("video_size", "1280x1024");
+  Opts.Set(AV::Dictionary::Opts::FRAMERATE, "30");
+  Opts.Set(AV::Dictionary::Opts::VIDEO_SIZE, "640x480");
 
-  avformat_open_input(&Context.Data(), FileName, InputFormat, &Opts.Data());
+  AV::FormatContext FormatContext;
+  avformat_open_input(&FormatContext.Data(), FileName, InputFormat, &Opts.Ptr);
 
-  av_dump_format(Context.Data(), 0, FileName, 0);
+  AV::Utils::DumpContext(FormatContext);
 
-  while (true)
+  auto StreamCodec = AV::Codec::FindFromAVStreams(FormatContext).Unwrap();
+
+  //  AV::StackPacket Packet;
+  int FramesProcessed = 0;
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "EndlessLoop"
+  for (;;)
   {
-    AV::Packet Packet;
-    int err = av_read_frame(Context.Data(), &Packet.GetInstance());
-    if (err) return 1;
+    auto Packet = FormatContext.ReadFrame();
 
-    printf("Packet info: %ld \n", Packet.GetInstance().pts);
+    if (Packet.IsEmpty() || Packet.RawPacket.stream_index != StreamCodec.StreamIndex) { continue; }
+
+    printf("Packet Size: %d \n", Packet.RawPacket.size);
+    //    FramesProcessed++;
   }
+#pragma clang diagnostic pop
 
-  avformat_close_input(&Context.Data());
+  avformat_close_input(&FormatContext.Data());
 
   return 0;
 }

@@ -6,22 +6,36 @@ extern "C"
 }
 
 namespace AV
+
 {
 class Packet
 {
 public:
-  AVPacket *RawPacket;
+  AVPacket* Ptr = nullptr;
   Packet();
   ~Packet();
 
-  AVPacket *operator*();
-  void Unref();
+  Packet(const Packet& P);
+  Packet(Packet&& P) noexcept;
 
-  static AVPacket &GetInstance()
-  {
-    static AVPacket p;
-
-    return p;
-  }
+  AVPacket* operator*() const;
+  void Clear() const;
+  void Destroy();
 };
+
+class StackPacket
+{
+public:
+  AVPacket RawPacket{};
+
+  StackPacket();
+  ~StackPacket();
+  StackPacket(const StackPacket& P);
+  StackPacket(StackPacket&& P) noexcept;
+  [[nodiscard]] inline bool IsEmpty() const { return RawPacket.buf == nullptr; };
+
+  [[nodiscard]] constexpr const AVPacket& Data() const { return RawPacket; }
+  void Clear();
+};
+
 } // namespace AV

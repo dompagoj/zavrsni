@@ -4,5 +4,6 @@ AllowShortBlocksOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
+PointerAlignment: Left
 ColumnLimit: 120
 TabWidth: 4
