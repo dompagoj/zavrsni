@@ -4,12 +4,22 @@ extern "C"
 }
 
 #include "Dictionary.h"
+#include <cassert>
 
-AV::Dictionary::Dictionary() : Ptr(nullptr) {}
+av::Dictionary::Dictionary() : Ptr(nullptr) {}
 
-AV::Dictionary::~Dictionary() { av_dict_free(&Ptr); }
+av::Dictionary::~Dictionary() { av_dict_free(&Ptr); }
 
-std::optional<std::string_view> AV::Dictionary::Get(std::string_view Key) const
+av::Dictionary::Dictionary(const av::Dictionary& P) { av_dict_copy(&Ptr, P.Ptr, 0); }
+
+av::Dictionary::Dictionary(av::Dictionary&& P) noexcept
+{
+  assert(P.Ptr != nullptr);
+  Ptr = P.Ptr;
+  P.Ptr = nullptr;
+}
+
+std::optional<std::string_view> av::Dictionary::Get(std::string_view Key) const
 {
   auto entry = av_dict_get(Ptr, Key.data(), nullptr, 0);
 
@@ -18,7 +28,7 @@ std::optional<std::string_view> AV::Dictionary::Get(std::string_view Key) const
   return entry->value;
 }
 
-std::optional<char*> AV::Dictionary::Get(const char* Key) const
+std::optional<char*> av::Dictionary::Get(const char* Key) const
 {
   auto entry = av_dict_get(Ptr, Key, nullptr, 0);
 
@@ -27,13 +37,9 @@ std::optional<char*> AV::Dictionary::Get(const char* Key) const
   return entry->value;
 }
 
-void AV::Dictionary::Set(std::string_view Key, std::string_view Value)
+void av::Dictionary::Set(std::string_view Key, std::string_view Value)
 {
   av_dict_set(&Ptr, Key.data(), Value.data(), 0);
 }
 
-void AV::Dictionary::Set(const char* Key, const char* Value) { av_dict_set(&Ptr, Key, Value, 0); }
-
-AVDictionary*& AV::Dictionary::operator*() { return Ptr; }
-
-AVDictionary*& AV::Dictionary::Data() { return Ptr; }
+void av::Dictionary::Set(const char* Key, const char* Value) { av_dict_set(&Ptr, Key, Value, 0); }

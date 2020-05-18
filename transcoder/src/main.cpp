@@ -12,13 +12,11 @@ extern "C"
 
 int main(int argc, char** argv)
 {
-  AV::Utils::RegisterAllDevices();
+  av::Utils::RegisterAllDevices();
 
-  auto InputFormat = AV::Utils::FindInputFormat(Constants::GET_VIDEO_DRIVER()).Expect("Failed to find input format");
+  auto InputFormat = av::Utils::FindInputFormat(Constants::GET_VIDEO_DRIVER()).Expect("Failed to find input format");
 
-  auto Devices = AV::Utils::FindAllInputDevices(InputFormat).Expect("Failed to find all input devices");
-
-  auto FileName = "/dev/video0";
+  auto DeviceName = av::Utils::FindInputDevice(InputFormat).Expect("Failed to find all input devices");
 
   if (!InputFormat)
   {
@@ -26,30 +24,33 @@ int main(int argc, char** argv)
     exit(1);
   }
 
-  AV::Dictionary Opts;
+  av::Dictionary Opts;
+  Opts.Set(av::Dictionary::Opts::FRAMERATE, "30");
+  Opts.Set(av::Dictionary::Opts::VIDEO_SIZE, "640x480");
 
-  Opts.Set(AV::Dictionary::Opts::FRAMERATE, "30");
-  Opts.Set(AV::Dictionary::Opts::VIDEO_SIZE, "640x480");
+  av::FormatContext FormatContext;
+  avformat_open_input(&FormatContext.Data(), DeviceName.c_str(), InputFormat, &*Opts);
 
-  AV::FormatContext FormatContext;
-  avformat_open_input(&FormatContext.Data(), FileName, InputFormat, &Opts.Ptr);
+  av::Utils::DumpContext(FormatContext);
 
-  AV::Utils::DumpContext(FormatContext);
+  auto StreamCodec = av::Codec::FindFromAVStreams(FormatContext).Unwrap();
+  auto StreamCodecContext = avcodec_alloc_context3(StreamCodec.Ptr);
 
-  auto StreamCodec = AV::Codec::FindFromAVStreams(FormatContext).Unwrap();
+  printf("%d", StreamCodecContext->codec_id);
 
-  //  AV::StackPacket Packet;
+  av::StackPacket Packet;
   int FramesProcessed = 0;
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
   for (;;)
   {
-    auto Packet = FormatContext.ReadFrame();
+    int err = FormatContext.ReadFrame(Packet);
 
-    if (Packet.IsEmpty() || Packet.RawPacket.stream_index != StreamCodec.StreamIndex) { continue; }
+    if (err < 0 || Packet.RawPacket.stream_index != StreamCodec.StreamIndex) continue;
 
-    printf("Packet Size: %d \n", Packet.RawPacket.size);
+    printf("Packet Size: %d \n", Packet.Size());
+    Packet.Clear();
     //    FramesProcessed++;
   }
 #pragma clang diagnostic pop

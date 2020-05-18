@@ -2,8 +2,6 @@
 #pragma ide diagnostic ignored "google-explicit-constructor"
 #pragma once
 
-#include "string.h"
-#include <concepts>
 #include <optional>
 #include <string>
 
@@ -20,7 +18,7 @@ extern "C"
 #define M_FILENAME "Unknown source file"
 #endif
 
-namespace AV
+namespace av
 {
 
 struct Error

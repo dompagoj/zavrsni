@@ -2,18 +2,18 @@
 
 #include "../constants.hpp"
 #include "FormatContext.h"
-#include "Result.h"
-#include <vector>
+#include "Result.hpp"
+#include <string>
 
 struct AVDeviceInfo;
 struct AVInputFormat;
 
-namespace AV::Utils
+namespace av::Utils
 {
 
-AV::Result<std::vector<AVDeviceInfo*>> FindAllInputDevices(AVInputFormat* InputFormat);
-AV::Result<AVInputFormat*> FindInputFormat(const char* DeviceDriver = Constants::GET_VIDEO_DRIVER());
-void DumpContext(AV::FormatContext& Context);
+av::Result<std::string> FindInputDevice(AVInputFormat* InputFormat, int Index = -1);
+av::Result<AVInputFormat*> FindInputFormat(const char* DeviceDriver = Constants::GET_VIDEO_DRIVER());
+void DumpContext(av::FormatContext& Context);
 void RegisterAllDevices();
 
 } // namespace AV::Utils

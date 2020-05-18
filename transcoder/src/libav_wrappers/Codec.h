@@ -1,11 +1,12 @@
 #pragma once
 
 #include "FormatContext.h"
-#include "Result.h"
+#include "Result.hpp"
 
 struct AVCodec;
+struct AVCodecContext;
 
-namespace AV
+namespace av
 {
 
 enum class CodecType
@@ -21,7 +22,7 @@ enum class CodecType
 class Codec
 {
 public:
-  AVCodec* Ptr = nullptr;
+  AVCodec* Ptr{nullptr};
   int StreamIndex{};
 
   Codec() = default;
@@ -29,9 +30,18 @@ public:
   Codec(const Codec& P) = default;
   Codec(Codec&& P) noexcept;
 
-  static AV::Result<Codec> FindFromAVStreams(FormatContext& Context, CodecType Type = CodecType::VIDEO);
-  static AV::Result<Codec> FindByID(AVCodecID id);
+  static av::Result<Codec> FindFromAVStreams(FormatContext& Context, CodecType Type = CodecType::VIDEO);
+  static av::Result<Codec> FindByID(AVCodecID id);
+};
+bool operator==(AVMediaType lType, CodecType rType);
+
+class CodecContext
+{
+public:
+  AVCodecContext* Ptr{nullptr};
+
+  CodecContext() = default;
+  explicit CodecContext(Codec codec);
 };
 
-bool operator==(AVMediaType lType, CodecType rType);
 } // namespace AV

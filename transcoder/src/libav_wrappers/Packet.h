@@ -5,23 +5,23 @@ extern "C"
 #include <libavcodec/avcodec.h>
 }
 
-namespace AV
+namespace av
 
 {
-class Packet
-{
-public:
-  AVPacket* Ptr = nullptr;
-  Packet();
-  ~Packet();
-
-  Packet(const Packet& P);
-  Packet(Packet&& P) noexcept;
-
-  AVPacket* operator*() const;
-  void Clear() const;
-  void Destroy();
-};
+// class Packet
+//{
+// public:
+//  AVPacket* Ptr = nullptr;
+//  Packet();
+//  ~Packet();
+//
+//  Packet(const Packet& P);
+//  Packet(Packet&& P) noexcept;
+//
+//  AVPacket* operator*() const;
+//  void Clear() const;
+//  void Destroy();
+//};
 
 class StackPacket
 {
@@ -32,10 +32,12 @@ public:
   ~StackPacket();
   StackPacket(const StackPacket& P);
   StackPacket(StackPacket&& P) noexcept;
-  [[nodiscard]] inline bool IsEmpty() const { return RawPacket.buf == nullptr; };
+  StackPacket& operator=(const StackPacket& Other);
 
+  [[nodiscard]] inline bool IsEmpty() const { return RawPacket.buf == nullptr; };
   [[nodiscard]] constexpr const AVPacket& Data() const { return RawPacket; }
-  void Clear();
+  inline void Clear() { av_packet_unref(&RawPacket); }
+  [[nodiscard]] inline int Size() const { return RawPacket.size; }
 };
 
 } // namespace AV
