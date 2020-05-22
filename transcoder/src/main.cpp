@@ -1,4 +1,5 @@
 #include "libav_wrappers/Codec.h"
+#include "libav_wrappers/CodecContext.h"
 #include "libav_wrappers/Dictionary.h"
 #include "libav_wrappers/FormatContext.h"
 #include "libav_wrappers/Packet.h"
@@ -10,7 +11,9 @@ extern "C"
 #include "libavformat/avformat.h"
 }
 
-int main(int argc, char** argv)
+int err;
+
+int main()
 {
   av::Utils::RegisterAllDevices();
 
@@ -29,33 +32,52 @@ int main(int argc, char** argv)
   Opts.Set(av::Dictionary::Opts::VIDEO_SIZE, "640x480");
 
   av::FormatContext FormatContext;
-  avformat_open_input(&FormatContext.Data(), DeviceName.c_str(), InputFormat, &*Opts);
+  FormatContext.OpenInput(DeviceName, InputFormat, Opts);
+  FormatContext.Dump();
 
-  av::Utils::DumpContext(FormatContext);
+  auto VideoInputCodec = av::Codec::FindFromAVStreams(FormatContext, av::CodecType::VIDEO).Unwrap();
+  //  av::CodecContext InputCodecContext(VideoInputContext);
 
-  auto StreamCodec = av::Codec::FindFromAVStreams(FormatContext).Unwrap();
-  auto StreamCodecContext = avcodec_alloc_context3(StreamCodec.Ptr);
+  av::Codec H264Codec(AV_CODEC_ID_H264);
+  av::CodecContext H264Encoder(H264Codec);
 
-  printf("%d", StreamCodecContext->codec_id);
+  H264Encoder.Ptr->width = 1280;
+  H264Encoder.Ptr->height = 720;
+  H264Encoder.Ptr->time_base = AVRational{1, 30};
+  H264Encoder.Ptr->pix_fmt = AV_PIX_FMT_YUV422P;
 
-  av::StackPacket Packet;
-  int FramesProcessed = 0;
+  H264Encoder.Open();
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "EndlessLoop"
-  for (;;)
+  printf("H264Codec name: %s \n", H264Codec.Ptr->long_name);
+  printf("H264Encoder not null: %s \n", H264Encoder.Ptr != nullptr ? "True" : "False");
+
+  int PacketsToSend = 1;
+
+  printf("Sending packets \n");
+  for (int i = 0; i < PacketsToSend; i++)
   {
-    int err = FormatContext.ReadFrame(Packet);
+    auto Packet = FormatContext.ReadFrame();
 
-    if (err < 0 || Packet.RawPacket.stream_index != StreamCodec.StreamIndex) continue;
+    if (Packet.RawPacket.stream_index != VideoInputCodec.StreamIndex) continue;
 
-    printf("Packet Size: %d \n", Packet.Size());
-    Packet.Clear();
-    //    FramesProcessed++;
+    auto Result = H264Encoder.SendPacket(Packet);
+    if (Result.HasError()) { printf("Error while sending packet %s", Result.Err().Msg.c_str()); }
   }
-#pragma clang diagnostic pop
 
-  avformat_close_input(&FormatContext.Data());
+  return 0;
+
+  printf("Receiving decoded packets \n");
+  av::StackPacket EncodecPacket;
+  while (int rErr = H264Encoder.ReceivePacket(EncodecPacket) != AVERROR_EOF)
+  {
+    if (rErr < 0)
+    {
+      printf("Got error! \n");
+      continue;
+      ;
+    }
+    printf("Encoded Packet Size: %d \n", EncodecPacket.RawPacket.size);
+  }
 
   return 0;
 }

@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "google-explicit-constructor"
 #pragma once
 
 #include <optional>
@@ -30,14 +28,16 @@ struct Error
   {
 
 #if defined(__clang__)
-    Msg = av_err2str(Code);
+    char Buffer[AV_ERROR_MAX_STRING_SIZE];
+    av_make_error_string(Buffer, AV_ERROR_MAX_STRING_SIZE, Code);
+    Msg = std::string(Buffer);
 #else
     char Buffer[AV_ERROR_MAX_STRING_SIZE];
     av_make_error_string(Buffer, AV_ERROR_MAX_STRING_SIZE, Code);
     Msg = std::string(Buffer);
 #endif
   }
-  Error(const std::string_view& Msg) : Msg(Msg), Code(-1) {}
+  Error(const std::string_view& Msg) : Code(-1), Msg(Msg) {}
 };
 
 template <typename T> class Result
@@ -63,8 +63,7 @@ public:
   {
     if (error)
     {
-      printf("%s \n %s at Line: %d \n Actual error: %s \n", Message.data(), M_FILENAME, __LINE__,
-             error.value().Msg.c_str());
+      printf("%s \n Actual error: %s \n", Message.data(), error.value().Msg.c_str());
       exit(1);
     }
 
@@ -75,7 +74,7 @@ public:
   {
     if (error)
     {
-      printf("%s \n %s at Line: %d \n", error.value().Msg.c_str(), M_FILENAME, __LINE__);
+      printf("Error while unwrapping:  %s \n", error.value().Msg.c_str());
       exit(1);
     }
 
@@ -94,5 +93,3 @@ public:
 };
 
 } // namespace AV
-
-#pragma clang diagnostic pop

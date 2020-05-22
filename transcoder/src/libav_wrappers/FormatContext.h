@@ -4,7 +4,10 @@ extern "C"
 #include <libavformat/avformat.h>
 }
 
+#include "Dictionary.h"
 #include "Packet.h"
+#include <string_view>
+
 namespace av
 {
 
@@ -14,13 +17,17 @@ class FormatContext
 public:
   AVFormatContext* Ptr{nullptr};
 
-  explicit FormatContext(bool ShouldAlloc = true);
+  explicit FormatContext();
   ~FormatContext();
 
   constexpr AVFormatContext*& Data() { return Ptr; };
 
   [[nodiscard]] inline int ReadFrame(av::StackPacket& Packet) const { return av_read_frame(Ptr, &Packet.RawPacket); }
   [[nodiscard]] StackPacket ReadFrame() const;
+
+  void Dump() const;
+  inline void Close() { avformat_close_input(&Ptr); }
+  void OpenInput(std::string_view Devicename, AVInputFormat* InputFormat, av::Dictionary& Opts);
 };
 
 } // namespace AV

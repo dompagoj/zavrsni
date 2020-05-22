@@ -1,5 +1,4 @@
 #include "Utils.h"
-#include <cassert>
 #include <cstdint>
 
 extern "C"
@@ -47,5 +46,4 @@ av::Result<AVInputFormat*> av::Utils::FindInputFormat(const char* DeviceDriver)
   return av_find_input_format(DeviceDriver);
 }
 
-void av::Utils::DumpContext(av::FormatContext& Context) { av_dump_format(Context.Ptr, 0, nullptr, 0); }
 void av::Utils::RegisterAllDevices() { avdevice_register_all(); }

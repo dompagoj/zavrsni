@@ -32,7 +32,7 @@ public:
   ~StackPacket();
   StackPacket(const StackPacket& P);
   StackPacket(StackPacket&& P) noexcept;
-  StackPacket& operator=(const StackPacket& Other);
+  StackPacket& operator=(const StackPacket& Other) = delete;
 
   [[nodiscard]] inline bool IsEmpty() const { return RawPacket.buf == nullptr; };
   [[nodiscard]] constexpr const AVPacket& Data() const { return RawPacket; }

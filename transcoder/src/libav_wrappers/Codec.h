@@ -4,7 +4,6 @@
 #include "Result.hpp"
 
 struct AVCodec;
-struct AVCodecContext;
 
 namespace av
 {
@@ -23,10 +22,11 @@ class Codec
 {
 public:
   AVCodec* Ptr{nullptr};
-  int StreamIndex{};
+  int StreamIndex{0};
 
   Codec() = default;
   explicit Codec(AVCodec* Ptr);
+  explicit Codec(AVCodecID CodecId);
   Codec(const Codec& P) = default;
   Codec(Codec&& P) noexcept;
 
@@ -34,14 +34,5 @@ public:
   static av::Result<Codec> FindByID(AVCodecID id);
 };
 bool operator==(AVMediaType lType, CodecType rType);
-
-class CodecContext
-{
-public:
-  AVCodecContext* Ptr{nullptr};
-
-  CodecContext() = default;
-  explicit CodecContext(Codec codec);
-};
 
 } // namespace AV
