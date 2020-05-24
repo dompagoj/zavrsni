@@ -9,4 +9,7 @@ include(sources.cmake)
 add_executable(transcoder src/main.cpp ${SOURCES})
 
 include(project_settings.cmake)
+#include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+
+#target_link_libraries(transcoder${CONAN_LIBS})
 target_link_libraries(transcoder FFmpeg)

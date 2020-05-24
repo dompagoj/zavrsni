@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include "Codec.h"
 #include <cstdint>
 
 extern "C"
@@ -47,3 +48,16 @@ av::Result<AVInputFormat*> av::Utils::FindInputFormat(const char* DeviceDriver)
 }
 
 void av::Utils::RegisterAllDevices() { avdevice_register_all(); }
+
+AVCodecParameters* av::Utils::FindContextParamsFromFormatStreams(const av::FormatContext& FormatCtx,
+                                                                 av::MEDIA_TYPE Type)
+{
+  for (uint i = 0; i < FormatCtx.Ptr->nb_streams; i++)
+  {
+    auto Stream = FormatCtx.Ptr->streams[i];
+    auto StreamCodec = avcodec_find_decoder(Stream->codecpar->codec_id);
+    if (StreamCodec->type == Type) { return Stream->codecpar; }
+  }
+
+  return nullptr;
+}

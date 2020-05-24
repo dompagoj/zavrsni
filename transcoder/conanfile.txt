@@ -1,0 +1,5 @@
+[requires]
+ffmpeg/4.2@bincrafters/stable
+
+[generators]
+cmake

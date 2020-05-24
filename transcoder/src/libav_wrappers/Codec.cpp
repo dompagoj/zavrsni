@@ -6,29 +6,12 @@ extern "C"
 }
 
 av::Codec::Codec(AVCodec* Ptr) : Ptr(Ptr) {}
-av::Codec::Codec(AVCodecID CodecId) : Ptr(avcodec_find_encoder(CodecId)) {}
+av::Codec::Codec(AVCodecID CodecId, CodecType Type)
+    : Ptr(Type == CodecType::ENCODER ? avcodec_find_encoder(CodecId) : avcodec_find_decoder(CodecId))
+{
+}
 
 av::Codec::Codec(av::Codec&& P) noexcept : Ptr(P.Ptr) { P.Ptr = nullptr; }
-
-av::Result<av::Codec> av::Codec::FindFromAVStreams(av::FormatContext& Context, CodecType Type)
-{
-  av::Codec Codec;
-
-  for (uint i = 0; i < Context.Ptr->nb_streams; i++)
-  {
-    auto Stream = Context.Ptr->streams[i];
-    auto StreamCodec = avcodec_find_decoder(Stream->codecpar->codec_id);
-    if (StreamCodec->type == Type)
-    {
-      Codec.StreamIndex = i;
-      Codec.Ptr = StreamCodec;
-    }
-  }
-
-  if (!Codec.Ptr) return av::Error("Couldn't find Stream Codec of type AVMEDIA_TYPE_VIDEO");
-
-  return Codec;
-}
 
 av::Result<av::Codec> av::Codec::FindByID(AVCodecID id)
 {
@@ -39,6 +22,6 @@ av::Result<av::Codec> av::Codec::FindByID(AVCodecID id)
   return Codec(FoundCodecPtr);
 }
 
-bool av::operator==(AVMediaType lType, av::CodecType rType) { return static_cast<CodecType>(lType) == rType; }
+bool av::operator==(AVMediaType lType, av::MEDIA_TYPE rType) { return static_cast<MEDIA_TYPE>(lType) == rType; }
 
 // av::CodecContext::CodecContext(av::Codec codec) {}

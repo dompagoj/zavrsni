@@ -63,7 +63,7 @@ public:
   {
     if (error)
     {
-      printf("%s \n Actual error: %s \n", Message.data(), error.value().Msg.c_str());
+      printf("%s \n Actual error: %d %s \n", Message.data(), error->Code, error->Msg.c_str());
       exit(1);
     }
 
@@ -74,7 +74,7 @@ public:
   {
     if (error)
     {
-      printf("Error while unwrapping:  %s \n", error.value().Msg.c_str());
+      printf("Error while unwrapping: %d %s \n", error->Code, error->Msg.c_str());
       exit(1);
     }
 

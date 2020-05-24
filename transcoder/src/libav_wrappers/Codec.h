@@ -8,7 +8,7 @@ struct AVCodec;
 namespace av
 {
 
-enum class CodecType
+enum class MEDIA_TYPE
 {
   VIDEO = AVMEDIA_TYPE_VIDEO,
   AUDIO = AVMEDIA_TYPE_AUDIO,
@@ -16,6 +16,12 @@ enum class CodecType
   DATA = AVMEDIA_TYPE_DATA,       ///< Opaque data information usually continuous
   SUBTITLE = AVMEDIA_TYPE_SUBTITLE,
   ATTACHMENT = AVMEDIA_TYPE_ATTACHMENT, ///< Opaque data information usually sparse
+};
+
+enum class CodecType
+{
+  DECODER,
+  ENCODER,
 };
 
 class Codec
@@ -26,13 +32,12 @@ public:
 
   Codec() = default;
   explicit Codec(AVCodec* Ptr);
-  explicit Codec(AVCodecID CodecId);
+  explicit Codec(AVCodecID CodecId, CodecType Type);
   Codec(const Codec& P) = default;
   Codec(Codec&& P) noexcept;
 
-  static av::Result<Codec> FindFromAVStreams(FormatContext& Context, CodecType Type = CodecType::VIDEO);
   static av::Result<Codec> FindByID(AVCodecID id);
 };
-bool operator==(AVMediaType lType, CodecType rType);
+bool operator==(AVMediaType lType, MEDIA_TYPE rType);
 
 } // namespace AV
