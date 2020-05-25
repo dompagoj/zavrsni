@@ -72,34 +72,49 @@ int main()
 
   SwsContext* SwsCtx = sws_getContext(640, 480, AV_PIX_FMT_YUYV422, 640, 480, AV_PIX_FMT_YUV420P, 0, 0, 0, 0);
 
-  int Linesize[3] = {1280, 1280 / 2, 1280 / 2};
+  AVFrame* DstFrame = av_frame_alloc();
+  DstFrame->format = AV_PIX_FMT_YUV420P;
+  DstFrame->width = DecodedFrame->width;
+  DstFrame->height = DecodedFrame->height;
+  DstFrame->pts = DecodedFrame->pts;
+  DstFrame->pkt_dts = DecodedFrame->pkt_dts;
+  av_frame_get_buffer(DstFrame, 0);
 
-  int ret1337 = sws_scale(SwsCtx, DecodedFrame->data, Linesize, 0, 480, DecodedFrame->data, DecodedFrame->linesize);
+  int ret1337 =
+      sws_scale(SwsCtx, DecodedFrame->data, DecodedFrame->linesize, 0, 480, DstFrame->data, DstFrame->linesize);
 
-  printf("yuhu, %d", ret1337);
+  printf("yuhu, %d \n", ret1337);
 
-  int err3 = avcodec_send_frame(H264Encoder.Ptr, DecodedFrame);
+  int err3 = avcodec_send_frame(H264Encoder.Ptr, DstFrame);
+  err3 = avcodec_send_frame(H264Encoder.Ptr, DstFrame);
+  err3 = avcodec_send_frame(H264Encoder.Ptr, DstFrame);
   printf("Sent frame to encoder! %d \n", err3);
   if (err3 != 0 && err3 != AVERROR(EAGAIN)) { exit(1); }
 
-  int ret2 = 0;
   AVPacket EncodedPacket;
-  av_packet_make_refcounted(&EncodedPacket);
-  av_packet_make_writable(&EncodedPacket);
+  av_init_packet(&EncodedPacket);
 
-  while (ret2 >= 0)
+  int ret2 = 0;
+  int RetryCount = 0;
+  while (ret2 >= 0 && RetryCount < 10)
   {
     printf("Receiving packet from encoder! \n");
     ret2 = avcodec_receive_packet(H264Encoder.Ptr, &EncodedPacket);
     printf("Receiving packet from encoder! done!: %d Decoded packet size:  %d\n", ret2, EncodedPacket.size);
 
-    if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
+    if (ret2 == AVERROR(EAGAIN))
+    {
+      ret2 = 0;
+      RetryCount++;
+    }
   }
 
-  printf("Done !, encoded packet size:  %d", EncodedPacket.size);
+  printf("Done !, encoded packet size:  %d \n", EncodedPacket.size);
 
   //  auto Packet = H264Encoder.ReceivePacket().Unwrap();
   av_frame_free(&DecodedFrame);
+  av_frame_free(&DstFrame);
+  av_packet_unref(&EncodedPacket);
 
   return 0;
 }
