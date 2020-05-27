@@ -14,7 +14,7 @@ public:
 
   CodecContext() = default;
   explicit CodecContext(const av::Codec& Codec);
-  explicit CodecContext(AVCodecParameters* Params);
+  explicit CodecContext(AVCodecParameters* Params, av::CodecType CodecType);
 
   CodecContext(const CodecContext& P);
   CodecContext(CodecContext&& P) noexcept;

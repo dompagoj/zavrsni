@@ -5,9 +5,11 @@ av::CodecContext::CodecContext(av::Codec const& Codec)
   Ptr = avcodec_alloc_context3(Codec.Ptr);
   this->Codec = Codec.Ptr;
 }
-av::CodecContext::CodecContext(AVCodecParameters* Params)
+av::CodecContext::CodecContext(AVCodecParameters* Params, av::CodecType CodecType)
 {
-  Codec = avcodec_find_decoder(Params->codec_id);
+
+  Codec = CodecType == av::CodecType::ENCODER ? avcodec_find_encoder(Params->codec_id)
+                                              : avcodec_find_decoder(Params->codec_id);
   Ptr = avcodec_alloc_context3(Codec);
   avcodec_parameters_to_context(Ptr, Params);
 }
