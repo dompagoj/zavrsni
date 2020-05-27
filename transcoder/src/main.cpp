@@ -119,7 +119,7 @@ int main()
   SwsContext* SwsCtx =
       sws_getContext(640, 480, InputVideoDecoder.Ptr->pix_fmt, 640, 480, H264Encoder.Ptr->pix_fmt, 0, 0, 0, 0);
 
-  int FramesToProcess = 5;
+  int FramesToProcess = 1000;
   printf("Encoding 1000 frames! \n");
   for (int i = 0; i < FramesToProcess; i++)
   {
@@ -138,44 +138,41 @@ int main()
     DstFrame->format = H264Encoder.Ptr->pix_fmt;
     DstFrame->width = DecodedFrame->width;
     DstFrame->height = DecodedFrame->height;
-    DstFrame->pts = DecodedFrame->pts;
+    DstFrame->pts = i * (15873) / 30;
     DstFrame->pkt_dts = DecodedFrame->pkt_dts;
     av_frame_get_buffer(DstFrame, 0);
 
-    int ret1337 =
-        sws_scale(SwsCtx, DecodedFrame->data, DecodedFrame->linesize, 0, 480, DstFrame->data, DstFrame->linesize);
+    sws_scale(SwsCtx, DecodedFrame->data, DecodedFrame->linesize, 0, 480, DstFrame->data, DstFrame->linesize);
 
-    printf("yuhu, %d \n", ret1337);
     int err3 = avcodec_send_frame(H264Encoder.Ptr, DstFrame);
 
-    printf("Sent frame to encoder! %d \n", err3);
+    printf("Sent frame to encoder! %d i: %d\n", err3, i);
     if (err3 != 0 && err3 != AVERROR(EAGAIN)) { exit(1); }
 
     av_frame_unref(DecodedFrame);
-  }
+    int ret2 = 0;
+    printf("Receiving encoded packets! \n");
+    av::StackPacket EncodedPacket;
+    av_packet_make_refcounted(&EncodedPacket.RawPacket);
 
-  int ret2 = 0;
-  ret2 = avcodec_send_frame(H264Encoder.Ptr, nullptr);
-  printf("Receiving encoded packets! \n");
-  av::StackPacket EncodedPacket;
-  av_packet_make_refcounted(&EncodedPacket.RawPacket);
-
-  while (ret2 >= 0 && ret2 != AVERROR_EOF)
-  {
-    ret2 = H264Encoder.ReceivePacket(EncodedPacket);
-
-    if (ret2 == 0)
+    while (ret2 >= 0 && ret2 != AVERROR_EOF)
     {
-      printf("Encoded Packet size: %d \n", EncodedPacket.RawPacket.size);
-      EncodedPacket.RawPacket.stream_index = VideoStream->index;
-      int write_err = av_interleaved_write_frame(OutputFormatCtx, &EncodedPacket.RawPacket);
-      if (write_err < 0)
+      ret2 = H264Encoder.ReceivePacket(EncodedPacket);
+
+      if (ret2 == 0)
       {
-        printf("Failed to write frame! %d \n", write_err);
-        exit(1);
+        printf("Encoded Packet size: %d \n", EncodedPacket.RawPacket.size);
+        EncodedPacket.RawPacket.stream_index = VideoStream->index;
+        int write_err = av_interleaved_write_frame(OutputFormatCtx, &EncodedPacket.RawPacket);
+        if (write_err < 0)
+        {
+          printf("Failed to write frame! %d \n", write_err);
+          exit(1);
+        }
       }
     }
   }
+
   av_write_trailer(OutputFormatCtx);
 
   avformat_close_input(&OutputFormatCtx);
