@@ -7,4 +7,5 @@ list(APPEND SOURCES
         src/libav_wrappers/Utils.cpp src/libav_wrappers/Utils.h
         src/libav_wrappers/Codec.cpp src/libav_wrappers/Codec.h
         src/libav_wrappers/CodecContext.cpp src/libav_wrappers/CodecContext.h
+        src/network.hpp
         )

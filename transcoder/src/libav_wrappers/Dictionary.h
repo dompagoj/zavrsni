@@ -32,6 +32,7 @@ public:
 
   void Set(std::string_view Key, std::string_view Value);
   void Set(const char* Key, const char* Value);
+  void Set(const char* Key, const int Value);
 
   [[nodiscard]] inline AVDictionary*& Data() { return Ptr; };
   inline AVDictionary*& operator*() { return Ptr; }

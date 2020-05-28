@@ -43,3 +43,4 @@ void av::Dictionary::Set(std::string_view Key, std::string_view Value)
 }
 
 void av::Dictionary::Set(const char* Key, const char* Value) { av_dict_set(&Ptr, Key, Value, 0); }
+void av::Dictionary::Set(const char* Key, const int Value) { av_dict_set_int(&Ptr, Key, Value, 0); }

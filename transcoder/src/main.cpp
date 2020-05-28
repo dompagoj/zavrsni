@@ -4,6 +4,9 @@
 #include "libav_wrappers/FormatContext.h"
 #include "libav_wrappers/Packet.h"
 #include "libav_wrappers/Utils.h"
+#include "network.hpp"
+#include <array>
+#include <cassert>
 
 extern "C"
 {
@@ -14,19 +17,26 @@ extern "C"
 #include "libswscale/swscale.h"
 }
 
-int custom_io_write(void* opaque, uint8_t* buffer, int32_t buffer_size)
+const static int WIDTH = 640;
+const static int HEIGHT = 480;
+const static int FRAMERATE = 30;
+
+static UdpClient Client(13000);
+
+int CustomAvioSendPacket(void* opaque, uint8_t* Buffer, int32_t BufferSize)
 {
-  if (!opaque) { printf("wut"); }
-  printf("Custom io write called! %s, %d", buffer, buffer_size);
+  assert(opaque != nullptr);
+  assert(Buffer != nullptr);
+  assert(BufferSize > 0);
+  Client.Send(Buffer, BufferSize);
 
   return 0;
 }
 
 int64_t custom_io_seek(void* opaque, int64_t offset, int whence)
 {
-  if (!opaque) { printf("wut"); }
-  printf("Custom io write called! %ld, %d", offset, whence);
-
+  // dummy function
+  printf("Custom io seek called! %ld, %d %d", offset, whence, opaque != nullptr);
   return 0;
 }
 
@@ -45,31 +55,31 @@ int main()
   }
 
   av::Dictionary Opts;
-  Opts.Set(av::Dictionary::Opts::FRAMERATE, "30");
-  Opts.Set(av::Dictionary::Opts::VIDEO_SIZE, "640x480");
+  Opts.Set(av::Dictionary::Opts::FRAMERATE, FRAMERATE);
+  Opts.Set(av::Dictionary::Opts::VIDEO_SIZE, av::Utils::GetResolutionString(WIDTH, HEIGHT));
 
   av::FormatContext InputFormatCtx;
   InputFormatCtx.OpenInput(DeviceName, InputFormat, Opts);
   InputFormatCtx.Dump();
 
-  auto Framerate = AVRational{30, 1};
-  auto Timebase = AVRational{1, 30};
-  auto RawVideoCodecParams = av::Utils::FindContextParamsFromFormatStreams(InputFormatCtx, av::MEDIA_TYPE::VIDEO);
-  av::CodecContext InputVideoDecoder(RawVideoCodecParams, av::CodecType::DECODER);
-  InputVideoDecoder.Ptr->framerate = Framerate;
-  InputVideoDecoder.Ptr->time_base = Timebase;
+  auto InputVideoStream = av::Utils::FindStreamFromFormatCtx(InputFormatCtx, av::MEDIA_TYPE::VIDEO);
+  InputVideoStream->start_time = 0;
+  auto FramerateRational = InputVideoStream->avg_frame_rate;
+  auto TimebaseRational = av_inv_q(FramerateRational);
+
+  av::CodecContext InputVideoDecoder(InputVideoStream->codecpar, av::CodecType::DECODER);
 
   InputVideoDecoder.Open().Expect("Failed to open InputVideoDecoder");
 
   av::CodecContext H264Encoder(av::Codec(AV_CODEC_ID_H264, av::CodecType::ENCODER));
 
-  H264Encoder.Ptr->bit_rate = 300000;
+  H264Encoder.Ptr->bit_rate = 100000;
   H264Encoder.Ptr->width = InputVideoDecoder.Ptr->width;
   H264Encoder.Ptr->height = InputVideoDecoder.Ptr->height;
-  H264Encoder.Ptr->time_base = InputVideoDecoder.Ptr->time_base;
+  H264Encoder.Ptr->time_base = TimebaseRational;
+  H264Encoder.Ptr->framerate = FramerateRational;
   H264Encoder.Ptr->gop_size = 10;
   H264Encoder.Ptr->max_b_frames = 1;
-  H264Encoder.Ptr->framerate = InputVideoDecoder.Ptr->framerate;
   H264Encoder.Ptr->pix_fmt = AV_PIX_FMT_YUV420P;
   H264Encoder.Ptr->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
   av_opt_set(H264Encoder.Ptr->priv_data, "preset", "ultrafast", 0);
@@ -81,30 +91,23 @@ int main()
 
   AVCodecParameters* VideoStreamCodecParams = avcodec_parameters_alloc();
   avcodec_parameters_from_context(VideoStreamCodecParams, H264Encoder.Ptr);
-  auto VideoStream = avformat_new_stream(OutputFormatCtx, nullptr);
-  VideoStream->avg_frame_rate = InputVideoDecoder.Ptr->framerate;
-  avcodec_parameters_from_context(VideoStream->codecpar, H264Encoder.Ptr);
-  VideoStream->time_base = InputVideoDecoder.Ptr->time_base;
+  auto OutputVideoStream = avformat_new_stream(OutputFormatCtx, nullptr);
+  avcodec_parameters_from_context(OutputVideoStream->codecpar, H264Encoder.Ptr);
+  OutputVideoStream->time_base = TimebaseRational;
+  OutputVideoStream->avg_frame_rate = FramerateRational;
+  OutputVideoStream->start_time = 0;
 
   int BufferSize = 4000;
-  unsigned char* AvioBuffer = (unsigned char*)av_malloc(BufferSize);
+  auto* AvioBuffer = (unsigned char*)av_malloc(BufferSize);
 
-  AVIOContext* AvioCtx = avio_alloc_context(AvioBuffer, BufferSize, 1, (void*)42, nullptr, nullptr, &custom_io_seek);
+  AVIOContext* AvioCtx =
+      avio_alloc_context(AvioBuffer, BufferSize, 1, (void*)42, nullptr, &CustomAvioSendPacket, &custom_io_seek);
   OutputFormatCtx->pb = AvioCtx;
-
-  av::Dictionary OutputOpts;
-  OutputOpts.Set("live", "1");
 
   av_dump_format(OutputFormatCtx, 0, nullptr, 1);
 
-  int file_open_err = avio_open2(&OutputFormatCtx->pb, "./test.mp4", AVIO_FLAG_READ_WRITE, nullptr, nullptr);
-
-  if (file_open_err < 0)
-  {
-    printf("Failed to open file! %d \n", file_open_err);
-    exit(1);
-  }
-
+  av::Dictionary OutputOpts;
+  OutputOpts.Set("live", "1");
   int write_header_err = avformat_write_header(OutputFormatCtx, &OutputOpts.Ptr);
   if (write_header_err < 0)
   {
@@ -112,57 +115,54 @@ int main()
     exit(1);
   }
 
-  //  av_write_trailer(OutputFormatCtx);
-
   AVFrame* DecodedFrame = av_frame_alloc();
   AVFrame* DstFrame = av_frame_alloc();
-  SwsContext* SwsCtx =
-      sws_getContext(640, 480, InputVideoDecoder.Ptr->pix_fmt, 640, 480, H264Encoder.Ptr->pix_fmt, 0, 0, 0, 0);
+  SwsContext* SwsCtx = sws_getContext(WIDTH, HEIGHT, InputVideoDecoder.Ptr->pix_fmt, WIDTH, HEIGHT,
+                                      H264Encoder.Ptr->pix_fmt, 0, 0, 0, 0);
 
-  int FramesToProcess = 1000;
-  printf("Encoding 1000 frames! \n");
-  for (int i = 0; i < FramesToProcess; i++)
+  int FramesToProcess = 10000;
+  int64_t LatestTimestamp = 0;
+  for (int64_t i = 0; i < FramesToProcess; i++)
   {
     auto InputVideoPacket = InputFormatCtx.ReadFrame();
-    printf("Sending packet for decoding! \n");
-    int err = avcodec_send_packet(InputVideoDecoder.Ptr, &InputVideoPacket.RawPacket);
-    printf("Sending packet for decoding! done!: %d\n", err);
+    avcodec_send_packet(InputVideoDecoder.Ptr, &InputVideoPacket.RawPacket);
 
-    printf("Receiving frame from decoder! \n");
-    int ret = avcodec_receive_frame(InputVideoDecoder.Ptr, DecodedFrame);
-
-    printf("%d", H264Encoder.Ptr->internal != nullptr);
-    printf("Receiving frame from decoder! done!: %d %d \n", ret, DecodedFrame->width);
+    avcodec_receive_frame(InputVideoDecoder.Ptr, DecodedFrame);
 
     av_frame_copy_props(DstFrame, DecodedFrame);
     DstFrame->format = H264Encoder.Ptr->pix_fmt;
     DstFrame->width = DecodedFrame->width;
     DstFrame->height = DecodedFrame->height;
-    DstFrame->pts = i * (15873) / 30;
-    DstFrame->pkt_dts = DecodedFrame->pkt_dts;
     av_frame_get_buffer(DstFrame, 0);
 
-    sws_scale(SwsCtx, DecodedFrame->data, DecodedFrame->linesize, 0, 480, DstFrame->data, DstFrame->linesize);
+    sws_scale(SwsCtx, DecodedFrame->data, DecodedFrame->linesize, 0, HEIGHT, DstFrame->data, DstFrame->linesize);
 
-    int err3 = avcodec_send_frame(H264Encoder.Ptr, DstFrame);
+    int err = avcodec_send_frame(H264Encoder.Ptr, DstFrame);
 
-    printf("Sent frame to encoder! %d i: %d\n", err3, i);
-    if (err3 != 0 && err3 != AVERROR(EAGAIN)) { exit(1); }
+    if (err != 0 && err != AVERROR(EAGAIN)) { exit(1); }
 
     av_frame_unref(DecodedFrame);
+
     int ret2 = 0;
-    printf("Receiving encoded packets! \n");
     av::StackPacket EncodedPacket;
     av_packet_make_refcounted(&EncodedPacket.RawPacket);
 
-    while (ret2 >= 0 && ret2 != AVERROR_EOF)
+    if (FramesToProcess - i == 1) { avcodec_send_frame(H264Encoder.Ptr, nullptr); }
+
+    while (ret2 >= 0)
     {
       ret2 = H264Encoder.ReceivePacket(EncodedPacket);
+      EncodedPacket.RawPacket.stream_index = OutputVideoStream->index;
+      EncodedPacket.RawPacket.pts = LatestTimestamp;
+      EncodedPacket.RawPacket.dts = LatestTimestamp;
+      EncodedPacket.RawPacket.duration =
+          av_rescale_q(InputVideoPacket.RawPacket.duration, InputVideoStream->time_base, OutputVideoStream->time_base);
+      LatestTimestamp += EncodedPacket.RawPacket.duration;
+      EncodedPacket.RawPacket.pos = -1;
 
       if (ret2 == 0)
       {
-        printf("Encoded Packet size: %d \n", EncodedPacket.RawPacket.size);
-        EncodedPacket.RawPacket.stream_index = VideoStream->index;
+
         int write_err = av_interleaved_write_frame(OutputFormatCtx, &EncodedPacket.RawPacket);
         if (write_err < 0)
         {
@@ -171,6 +171,7 @@ int main()
         }
       }
     }
+    av_frame_unref(DstFrame);
   }
 
   av_write_trailer(OutputFormatCtx);
