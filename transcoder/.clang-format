@@ -1,6 +1,6 @@
 BreakBeforeBraces: Allman
 AllowShortFunctionsOnASingleLine: All
-AllowShortBlocksOnASingleLine: true
+AllowShortBlocksOnASingleLine: Always
 AllowShortIfStatementsOnASingleLine: Always
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true

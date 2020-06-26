@@ -1,51 +1,27 @@
 #include "libav_wrappers/Codec.h"
 #include "libav_wrappers/CodecContext.h"
-#include "libav_wrappers/Dictionary.h"
-#include "libav_wrappers/FormatContext.h"
-#include "libav_wrappers/Packet.h"
 #include "libav_wrappers/Utils.h"
 #include "network.hpp"
-#include <array>
 #include <cassert>
 
 extern "C"
 {
-#include "libavcodec/avcodec.h"
 #include "libavdevice/avdevice.h"
-#include "libavformat/avformat.h"
 #include "libavutil/imgutils.h"
 #include "libswscale/swscale.h"
 }
 
-const static int WIDTH = 640;
-const static int HEIGHT = 480;
-const static int FRAMERATE = 30;
-
-static UdpClient Client(13000);
-
-int CustomAvioSendPacket(void* opaque, uint8_t* Buffer, int32_t BufferSize)
-{
-  assert(opaque != nullptr);
-  assert(Buffer != nullptr);
-  assert(BufferSize > 0);
-  Client.Send(Buffer, BufferSize);
-
-  return 0;
-}
-
-int64_t custom_io_seek(void* opaque, int64_t offset, int whence)
-{
-  // dummy function
-  printf("Custom io seek called! %ld, %d %d", offset, whence, opaque != nullptr);
-  return 0;
-}
+static int WIDTH = 800;
+static int HEIGHT = 600;
+const static int FRAMERATE = 25;
 
 int main()
 {
   av_log_set_level(AV_LOG_DEBUG);
   av::Utils::RegisterAllDevices();
 
-  auto InputFormat = av::Utils::FindInputFormat(Constants::GET_VIDEO_DRIVER()).Expect("Failed to find input format");
+  auto InputFormat = av::Utils::FindInputFormat(Constants::GET_VIDEO_DRIVER())
+      .Expect("Failed to find input format");
   auto DeviceName = av::Utils::FindInputDevice(InputFormat).Expect("Failed to find all input devices");
 
   if (!InputFormat)
@@ -66,14 +42,27 @@ int main()
   InputVideoStream->start_time = 0;
   auto FramerateRational = InputVideoStream->avg_frame_rate;
   auto TimebaseRational = av_inv_q(FramerateRational);
+  WIDTH = InputVideoStream->codecpar->width;
+  HEIGHT = InputVideoStream->codecpar->height;
 
   av::CodecContext InputVideoDecoder(InputVideoStream->codecpar, av::CodecType::DECODER);
+  InputVideoDecoder.Ptr->rc_buffer_size = 0;
+  InputVideoDecoder.Ptr->delay = 0;
 
   InputVideoDecoder.Open().Expect("Failed to open InputVideoDecoder");
 
   av::CodecContext H264Encoder(av::Codec(AV_CODEC_ID_H264, av::CodecType::ENCODER));
 
-  H264Encoder.Ptr->bit_rate = 100000;
+//  H264Encoder.Ptr->bit_rate = 1000000;
+  H264Encoder.Ptr->rc_buffer_size = 0;
+  H264Encoder.Ptr->me_cmp = 1;
+  H264Encoder.Ptr->me_range = 16;
+  H264Encoder.Ptr->qmin = 10;
+  H264Encoder.Ptr->qmax = 51;
+  H264Encoder.Ptr->me_subpel_quality = 5;
+  H264Encoder.Ptr->max_qdiff = 4;
+  H264Encoder.Ptr->delay = 0;
+  H264Encoder.Ptr->qcompress = 0.6;
   H264Encoder.Ptr->width = InputVideoDecoder.Ptr->width;
   H264Encoder.Ptr->height = InputVideoDecoder.Ptr->height;
   H264Encoder.Ptr->time_base = TimebaseRational;
@@ -83,31 +72,33 @@ int main()
   H264Encoder.Ptr->pix_fmt = AV_PIX_FMT_YUV420P;
   H264Encoder.Ptr->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
   av_opt_set(H264Encoder.Ptr->priv_data, "preset", "ultrafast", 0);
+  av_opt_set_int(H264Encoder.Ptr->priv_data, "crf", 31, 0);
+  av_opt_set(H264Encoder.Ptr->priv_data, "tune", "zerolatency", 0);
 
   H264Encoder.Open().Expect("Failed to open H264Encoder");
-
   AVFormatContext* OutputFormatCtx = avformat_alloc_context();
-  OutputFormatCtx->oformat = av_guess_format("MP4", "test.mp4", nullptr);
+  avformat_alloc_output_context2(&OutputFormatCtx, av_guess_format("MP4", nullptr, nullptr), nullptr, nullptr);
+  OutputFormatCtx->oformat->video_codec = H264Encoder.Codec->id;
 
-  AVCodecParameters* VideoStreamCodecParams = avcodec_parameters_alloc();
-  avcodec_parameters_from_context(VideoStreamCodecParams, H264Encoder.Ptr);
-  auto OutputVideoStream = avformat_new_stream(OutputFormatCtx, nullptr);
+  auto OutputVideoStream = avformat_new_stream(OutputFormatCtx, H264Encoder.Codec);
   avcodec_parameters_from_context(OutputVideoStream->codecpar, H264Encoder.Ptr);
   OutputVideoStream->time_base = TimebaseRational;
   OutputVideoStream->avg_frame_rate = FramerateRational;
   OutputVideoStream->start_time = 0;
 
-  int BufferSize = 4000;
-  auto* AvioBuffer = (unsigned char*)av_malloc(BufferSize);
-
-  AVIOContext* AvioCtx =
-      avio_alloc_context(AvioBuffer, BufferSize, 1, (void*)42, nullptr, &CustomAvioSendPacket, &custom_io_seek);
-  OutputFormatCtx->pb = AvioCtx;
-
   av_dump_format(OutputFormatCtx, 0, nullptr, 1);
+
+  int file_open_err = avio_open2(&OutputFormatCtx->pb, "tcp://localhost:13000", AVIO_FLAG_WRITE, nullptr, nullptr);
+  if (file_open_err < 0)
+  {
+    printf("Failed to open file! %d \n", file_open_err);
+    exit(1);
+  }
 
   av::Dictionary OutputOpts;
   OutputOpts.Set("live", "1");
+  OutputOpts.Set("movflags", "frag_keyframe+empty_moov+default_base_moof");
+
   int write_header_err = avformat_write_header(OutputFormatCtx, &OutputOpts.Ptr);
   if (write_header_err < 0)
   {
@@ -120,9 +111,9 @@ int main()
   SwsContext* SwsCtx = sws_getContext(WIDTH, HEIGHT, InputVideoDecoder.Ptr->pix_fmt, WIDTH, HEIGHT,
                                       H264Encoder.Ptr->pix_fmt, 0, 0, 0, 0);
 
-  int FramesToProcess = 10000;
+//  int FramesToProcess = 200;
   int64_t LatestTimestamp = 0;
-  for (int64_t i = 0; i < FramesToProcess; i++)
+  for (int64_t i = 0;; i++)
   {
     auto InputVideoPacket = InputFormatCtx.ReadFrame();
     avcodec_send_packet(InputVideoDecoder.Ptr, &InputVideoPacket.RawPacket);
@@ -147,12 +138,14 @@ int main()
     av::StackPacket EncodedPacket;
     av_packet_make_refcounted(&EncodedPacket.RawPacket);
 
-    if (FramesToProcess - i == 1) { avcodec_send_frame(H264Encoder.Ptr, nullptr); }
+//    if (FramesToProcess - i == 1) { avcodec_send_frame(H264Encoder.Ptr, nullptr); }
 
     while (ret2 >= 0)
     {
       ret2 = H264Encoder.ReceivePacket(EncodedPacket);
       EncodedPacket.RawPacket.stream_index = OutputVideoStream->index;
+      EncodedPacket.RawPacket.flags |= AV_PKT_FLAG_KEY;
+
       EncodedPacket.RawPacket.pts = LatestTimestamp;
       EncodedPacket.RawPacket.dts = LatestTimestamp;
       EncodedPacket.RawPacket.duration =
@@ -176,9 +169,11 @@ int main()
 
   av_write_trailer(OutputFormatCtx);
 
-  avformat_close_input(&OutputFormatCtx);
   av_frame_free(&DecodedFrame);
   av_frame_free(&DstFrame);
+  avio_close(OutputFormatCtx->pb);
+  avformat_free_context(OutputFormatCtx);
+//  avformat_close_input(&OutputFormatCtx);
 
   return 0;
 }
