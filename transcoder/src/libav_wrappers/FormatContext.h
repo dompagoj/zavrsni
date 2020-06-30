@@ -6,6 +6,7 @@ extern "C"
 
 #include "Dictionary.h"
 #include "Packet.h"
+#include "Result.hpp"
 #include <string_view>
 
 namespace av
@@ -28,6 +29,8 @@ public:
   void Dump() const;
   inline void Close() { avformat_close_input(&Ptr); }
   void OpenInput(std::string_view Devicename, AVInputFormat* InputFormat, av::Dictionary& Opts);
+  av::Result<int> WriteHeader(av::Dictionary& Opts);
 };
+
 
 } // namespace AV

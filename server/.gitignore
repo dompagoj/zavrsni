@@ -3,3 +3,5 @@ build
 *.mp4
 .vscode
 test.mp4
+tsconfig.tsbuildinfo
+react-app

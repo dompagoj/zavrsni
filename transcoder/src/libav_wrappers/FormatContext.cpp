@@ -19,3 +19,11 @@ void av::FormatContext::OpenInput(std::string_view DeviceName, AVInputFormat* In
 {
   avformat_open_input(&Ptr, DeviceName.data(), InputFormat, &*Opts);
 }
+
+av::Result<int> av::FormatContext::WriteHeader(av::Dictionary& Opts)
+{
+  int write_header_err = avformat_write_header(Ptr, &Opts.Ptr);
+  if (write_header_err < 0) return av::Error("Failed to write header");
+
+  return 0;
+}
