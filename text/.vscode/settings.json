@@ -1,6 +1,6 @@
 {
   "editor.formatOnSave": false,
-  "latex-workshop.message.log.show": false,
-  "latex-workshop.message.error.show": false,
+  "latex-workshop.message.log.show": true,
+  "latex-workshop.message.error.show": true,
   "latex-workshop.latex.outDir": "%DIR%/build"
 }
