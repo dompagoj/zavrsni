@@ -55,3 +55,19 @@ int av::CodecContext::ReceivePacket(av::StackPacket& Packet) const
 {
   return avcodec_receive_packet(Ptr, &Packet.RawPacket);
 }
+int av::CodecContext::SendFrame(av::Frame& Frame) const
+{
+  return avcodec_send_frame(Ptr, Frame.Ptr);
+}
+int av::CodecContext::ReceiveFrame(av::Frame& Frame) const
+{
+  return avcodec_receive_frame(Ptr, Frame.Ptr);
+}
+void av::CodecContext::SetPrivData(const char* Key, int Value) const
+{
+  av_opt_set_int(Ptr->priv_data, Key, Value, 0);
+}
+void av::CodecContext::SetPrivData(const char* Key, const char* Value) const
+{
+  av_opt_set(Ptr->priv_data, Key, Value, 0);
+}

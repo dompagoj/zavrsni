@@ -21,6 +21,8 @@ public:
   explicit FormatContext();
   ~FormatContext();
 
+  int AllocOutput(const char* FormatName);
+
   constexpr AVFormatContext*& Data() { return Ptr; };
 
   [[nodiscard]] inline int ReadFrame(av::StackPacket& Packet) const { return av_read_frame(Ptr, &Packet.RawPacket); }

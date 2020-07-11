@@ -36,7 +36,7 @@ public:
   Codec(const Codec& P) = default;
   Codec(Codec&& P) noexcept;
 
-  static av::Result<Codec> FindByID(AVCodecID id);
+  static av::Result<Codec> FindByID(AVCodecID id, CodecType Type);
 };
 bool operator==(AVMediaType lType, MEDIA_TYPE rType);
 

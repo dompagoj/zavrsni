@@ -1,6 +1,13 @@
 #pragma once
 
 #include "Codec.h"
+#include "Frame.h"
+
+extern "C"
+{
+#include <libavutil/opt.h>
+}
+
 struct AVCodecContext;
 
 namespace av
@@ -23,6 +30,14 @@ public:
   [[nodiscard]] av::Result<bool> Open() const;
 
   int SendPacket(av::StackPacket& Packet) const;
+
+  int SendFrame(av::Frame& Frame) const;
+
+  int ReceiveFrame(av::Frame& Frame) const;
+
+  void SetPrivData(const char* Key, int Value) const;
+
+  void SetPrivData(const char* Key, const char* Value) const;
 
   [[nodiscard]] av::Result<av::StackPacket> ReceivePacket() const;
   int ReceivePacket(av::StackPacket& Packet) const;

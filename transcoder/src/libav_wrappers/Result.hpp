@@ -19,28 +19,35 @@ extern "C"
 namespace av
 {
 
-struct Error
+class Error
 {
+public:
+  bool HasError = true;
   int Code{};
   std::string Msg;
 
   Error(int Code) : Code{Code}
   {
+    if (Code >= 0)
+    {
+      HasError = false;
+      return;
+    }
 
-#if defined(__clang__)
     char Buffer[AV_ERROR_MAX_STRING_SIZE];
     av_make_error_string(Buffer, AV_ERROR_MAX_STRING_SIZE, Code);
     Msg = std::string(Buffer);
-#else
-    char Buffer[AV_ERROR_MAX_STRING_SIZE];
-    av_make_error_string(Buffer, AV_ERROR_MAX_STRING_SIZE, Code);
-    Msg = std::string(Buffer);
-#endif
   }
   Error(const std::string_view& Msg) : Code(-1), Msg(Msg) {}
+
+  operator bool() const
+  {
+    return HasError;
+  }
 };
 
-template <typename T> class Result
+template<typename T>
+class Result
 {
 
   std::optional<T> t;
@@ -57,7 +64,7 @@ public:
 
   [[nodiscard]] bool HasError() const { return !!error; }
 
-  [[nodiscard]] bool HasData() const { return t; }
+  [[nodiscard]] bool HasData() const { return !!t; }
 
   T Expect(std::string_view const& Message) const
   {

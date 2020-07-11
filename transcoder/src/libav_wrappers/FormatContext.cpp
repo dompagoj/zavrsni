@@ -27,3 +27,7 @@ av::Result<int> av::FormatContext::WriteHeader(av::Dictionary& Opts)
 
   return 0;
 }
+int av::FormatContext::AllocOutput(const char* FormatName)
+{
+  return avformat_alloc_output_context2(&Ptr, nullptr, FormatName, nullptr);
+}

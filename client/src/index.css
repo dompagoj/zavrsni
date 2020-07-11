@@ -1,13 +1,54 @@
 body {
+  height: 100%;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+    'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+#root {
+  height: 100%;
+}
+
+.title {
+  font-size: 28px;
+  color: black;
+  font-weight: bold;
+}
+
+.stream-title {
+  font-weight: bold;
+  color: black;
+  font-size: 21px;
+}
+
+.login-text {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 25px;
+}
+
+.login-wrapper {
+  background-color: #18191a;
+  /* background-color: #666; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+.login-form {
+  background: #fff;
+  box-shadow: 0 0 2rem -0.5rem #000;
+  border-radius: 1rem;
+  box-sizing: border-box;
+  padding: 55px 45px !important;
+  width: 400px;
 }

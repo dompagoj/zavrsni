@@ -1,0 +1,99 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[T1]{fontenc}
+% \usepackage[croatian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{color}
+\usepackage[hidelinks, breaklinks]{hyperref}
+\usepackage[nottoc]{tocbibind}
+\usepackage{secdot}
+
+
+\graphicspath{ {./images/} }
+\date{}
+
+\renewcommand*\contentsname{Sadržaj}
+\renewcommand{\listfigurename}{Slike}
+\renewcommand{\listtablename}{Tablice}
+\renewcommand{\figurename}{Slika}
+\renewcommand{\tablename}{Tablica}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{5}
+
+\definecolor{m}{RGB}{31, 189, 191}
+\definecolor{o}{RGB}{255, 122, 13}
+\definecolor{p}{RGB}{195, 0, 255}
+
+\newcommand{\collegeName}{TEHNIČKO VELEUČILIŠTE U ZAGREBU}
+\newcommand{\smjer}{STRUČNI STUDIJ RAČUNARSTVA}
+\newcommand{\radTittle}{Raspberry pie sigurnosna kamera i IOT implikacije}
+\newcommand{\radNumber}{}
+\newcommand{\paraBreak}{\\[0.5cm]}
+\newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\[6pt]}
+
+\newcommand{\foreign}[1]{\emph{#1}}
+\newcommand{\keyword}[2][m]{\textcolor{#1}{#2}}
+
+
+\begin{document}
+
+\begin{center} \obeylines
+  \setstretch{2}
+  {\large \textbf{\collegeName}}
+  {\normalsize \textbf{\smjer}}
+\end{center}
+\begin{center} \obeylines
+  \setstretch{1.6}
+  \vspace{\fill}
+    Domagoj Živanović 
+    {\Large \textbf{\radTittle}}
+    \item ZAVRŠNI RAD br. \radNumber
+  \vspace*{\fill}
+  Zagreb, Srpanj, 2020.
+\end{center}
+
+\thispagestyle{empty}
+
+\clearpage
+
+\begin{center} \obeylines
+  \setstretch{2}
+  {\large \textbf{\collegeName}}
+  {\normalsize \textbf{\smjer}}
+\end{center}
+\begin{center} \obeylines
+  \setstretch{1.75}
+  \vspace{\fill}
+      Domagoj Živanović
+      JMBAG: 0036483209
+    {\Large \textbf{\radTittle}}
+    ZAVRŠNI RAD br. \radNumber
+  \vspace*{\fill}
+  Zagreb, Srpanj, 2020.
+\end{center}
+
+\thispagestyle{empty}
+
+\clearpage
+
+
+\tableofcontents
+\clearpage
+\listoftables
+\listoffigures
+
+\include{sazetak}
+\include{uvod}
+\include{pregled}
+\include{implementacija/main}
+\include{zakljucak}
+\include{literatura}
+
+\end{document}

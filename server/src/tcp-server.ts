@@ -3,11 +3,8 @@ import { StreamingClients } from './streams'
 import { uuid } from 'uuidv4'
 import { createWriteStream } from 'fs'
 
-
-
 export const TCPServer = createServer()
 export const streamingClients = new StreamingClients()
-
 
 TCPServer.on('connection', socket => {
   // const fileStream = createWriteStream('./test.webm')

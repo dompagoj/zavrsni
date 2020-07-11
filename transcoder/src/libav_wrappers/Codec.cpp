@@ -1,21 +1,17 @@
 #include "Codec.h"
 
-extern "C"
-{
-#include "libavformat/avformat.h"
-}
-
 av::Codec::Codec(AVCodec* Ptr) : Ptr(Ptr) {}
+
 av::Codec::Codec(AVCodecID CodecId, CodecType Type)
-    : Ptr(Type == CodecType::ENCODER ? avcodec_find_encoder(CodecId) : avcodec_find_decoder(CodecId))
-{
-}
+    : Ptr(Type == CodecType::ENCODER ? avcodec_find_encoder(CodecId) : avcodec_find_decoder(CodecId)) {}
 
-av::Codec::Codec(av::Codec&& P) noexcept : Ptr(P.Ptr) { P.Ptr = nullptr; }
+av::Codec::Codec(av::Codec&& P) noexcept: Ptr(P.Ptr) { P.Ptr = nullptr; }
 
-av::Result<av::Codec> av::Codec::FindByID(AVCodecID id)
+av::Result<av::Codec> av::Codec::FindByID(AVCodecID id, CodecType Type)
 {
-  auto FoundCodecPtr = avcodec_find_decoder(id);
+  auto FoundCodecPtr = Type == CodecType::ENCODER
+                       ? avcodec_find_encoder(id)
+                       : avcodec_find_decoder(id);
 
   if (!FoundCodecPtr) return av::Error("Failed to find codec from id");
 

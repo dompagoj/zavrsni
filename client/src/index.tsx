@@ -1,17 +1,22 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './index.css'
-import App from './App'
 import { ReactQueryConfigProvider } from 'react-query'
+import { BrowserRouter } from 'react-router-dom'
+
+import './index.css'
+import 'antd/dist/antd.css'
 import * as serviceWorker from './serviceWorker'
 import { QueryConfig } from './query-config'
+import { MainRouter } from './main-router'
 
 ReactDOM.render(
-  <React.StrictMode>
-    <ReactQueryConfigProvider config={QueryConfig}>
-      <App />
-    </ReactQueryConfigProvider>
-  </React.StrictMode>,
+  // <React.StrictMode>
+  <ReactQueryConfigProvider config={QueryConfig}>
+    <BrowserRouter>
+      <MainRouter />
+    </BrowserRouter>
+  </ReactQueryConfigProvider>,
+  // </React.StrictMode>,
   document.getElementById('root')
 )
 

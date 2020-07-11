@@ -1,0 +1,13 @@
+// Two images side by side
+
+\usepackage{subfig}
+
+\begin{figure}%
+    \centering
+    \subfloat[label 1]{{\includegraphics[width=5cm]{img1} }}%
+    \qquad
+    \subfloat[label 2]{{\includegraphics[width=5cm]{img2} }}%
+    \caption{2 Figures side by side}%
+    \label{fig:example}%
+\end{figure}
+\end{document}
