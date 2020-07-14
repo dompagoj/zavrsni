@@ -9,11 +9,12 @@ interface IProps {
   onSubmit: (values: ILoginForm) => void
 }
 
-export const LoginForm: React.FC<IProps> = ({ onSubmit }) => {
+export const LoginForm: React.FC<IProps> = ({ onSubmit, form }) => {
   return (
     <Form
       // @ts-ignore
       onFinish={onSubmit}
+      form={form}
     >
       <Form.Item name="username" rules={[{ required: true, message: 'Username is required' }]}>
         <Input placeholder="Username" prefix={<UserOutlined />} />
@@ -22,7 +23,7 @@ export const LoginForm: React.FC<IProps> = ({ onSubmit }) => {
         <Input type="password" placeholder="Password" prefix={<LockOutlined />} />
       </Form.Item>
       <Button style={{ marginTop: 5 }} type="primary" htmlType="submit">
-        Enter
+        Login
       </Button>
     </Form>
   )

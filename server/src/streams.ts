@@ -1,7 +1,7 @@
-import { Socket } from "net";
+import { Socket } from 'net'
 
 class CameraStream {
-  constructor(public header: Buffer, public socket: Socket) { }
+  constructor(public header: Buffer, public socket: Socket) {}
 }
 
 export class StreamingClients {
@@ -27,5 +27,4 @@ export class StreamingClients {
     // @ts-ignore
     delete this.clients[socket.id]
   }
-
 }

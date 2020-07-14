@@ -36,10 +36,10 @@ export const StreamsScreen: React.FC = () => {
     <Flex flexDirection="column">
       <Title>Streams</Title>
       <Flex flexWrap="wrap" marginTop={5} justifyContent="space-evenly">
-        {streams.map((stream, index) => {
+        {data.map((stream, index) => {
           return (
-            <Box key={stream} width={800} height={600} marginBottom={5}>
-              <Stream title={`Stream ${index}`} id={stream} />
+            <Box key={stream.id} width={800} height={600} marginBottom={5}>
+              <Stream title={`Streaming device (${index + 1})`} id={stream.id} />
             </Box>
           )
         })}

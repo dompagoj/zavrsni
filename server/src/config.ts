@@ -1,5 +1,5 @@
 export const Config = {
-  JWT_KEY: process.env.JWT_KEY!,
+  JWT_SIGN_KEY: process.env.JWT_KEY!,
   env: {
     value: process.env.NODE_ENV,
     isDev() {
@@ -7,6 +7,6 @@ export const Config = {
     },
     isProduction() {
       return this.value === 'prod' || this.value === 'production'
-    }
-  }
+    },
+  },
 }

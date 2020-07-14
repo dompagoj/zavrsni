@@ -8,48 +8,28 @@ extern "C"
 #include "libavutil/error.h"
 }
 
-#if defined(__FILE_NAME__)
-#define M_FILENAME __FILE_NAME__
-#elif defined(__FILE__)
-#define M_FILENAME __FILE__
-#else
-#define M_FILENAME "Unknown source file"
-#endif
-
 namespace av
 {
 
 class Error
 {
 public:
-  bool HasError = true;
   int Code{};
   std::string Msg;
 
   Error(int Code) : Code{Code}
   {
-    if (Code >= 0)
-    {
-      HasError = false;
-      return;
-    }
-
     char Buffer[AV_ERROR_MAX_STRING_SIZE];
     av_make_error_string(Buffer, AV_ERROR_MAX_STRING_SIZE, Code);
     Msg = std::string(Buffer);
   }
-  Error(const std::string_view& Msg) : Code(-1), Msg(Msg) {}
 
-  operator bool() const
-  {
-    return HasError;
-  }
+  Error(const std::string_view& Msg) : Code(-1), Msg(Msg) {}
 };
 
 template<typename T>
 class Result
 {
-
   std::optional<T> t;
   std::optional<Error> error;
 
@@ -60,7 +40,7 @@ public:
   Result(const T& t) : t{t} {}
   Result(const T&& t) : t{std::move(t)} {}
 
-  Result(Error ErrCode) : error{ErrCode} {}
+  Result(Error ErrCode) : error{std::optional{ErrCode}} {}
 
   [[nodiscard]] bool HasError() const { return !!error; }
 

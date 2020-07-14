@@ -37,20 +37,20 @@ export async function seedUsers() {
   })
 }
 
-export async function generateJWT(user: User) {
+export function generateJWT(user: User) {
   return jwt.sign(
     {
       id: user.id,
       username: user.username,
     },
-    Config.JWT_KEY,
+    Config.JWT_SIGN_KEY,
     { expiresIn: '60 days' }
   )
 }
 
-export async function verifyJWT(token: string) {
+export function verifyJWT(token: string) {
   return new Promise<IJWTPayload | undefined>((resolve, reject) => {
-    jwt.verify(token, Config.JWT_KEY, (err, user) => {
+    jwt.verify(token, Config.JWT_SIGN_KEY, (err, user) => {
       if (err) return resolve(undefined)
 
       return resolve(user as IJWTPayload)

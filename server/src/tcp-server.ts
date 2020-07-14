@@ -7,10 +7,6 @@ export const TCPServer = createServer()
 export const streamingClients = new StreamingClients()
 
 TCPServer.on('connection', socket => {
-  // const fileStream = createWriteStream('./test.webm')
-
-  // socket.pipe(fileStream)
-
   console.log('Streaming device connected! ', socket.localAddress, socket.localPort)
   // @ts-ignore
   socket.id = uuid()
@@ -20,11 +16,13 @@ TCPServer.on('connection', socket => {
   })
 
   socket.on('close', () => {
-    console.log('Close!')
+    // @ts-ignore
+    console.log(`Streaming device ${socket.id} disconnected!`)
     streamingClients.removeClient(socket)
   })
   socket.on('end', () => {
-    console.log('End!')
+    // @ts-ignore
+    console.log(`Streaming device ${socket.id} disconnected!`)
     streamingClients.removeClient(socket)
   })
 })

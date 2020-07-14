@@ -3,7 +3,7 @@ import { IStream } from './types/http'
 import { ILoginForm } from './types/forms'
 
 export async function getStreams(): Promise<IStream[]> {
-  const { data } = await axios.get('streams')
+  const { data } = await axios.get('/streams')
 
   return data
 }

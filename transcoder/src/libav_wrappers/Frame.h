@@ -22,6 +22,9 @@ public:
 
   void UnRef();
 
+  AVFrame* operator->() { return Ptr; };
+  AVFrame operator*() { return *Ptr; };
+
 };
 
 }

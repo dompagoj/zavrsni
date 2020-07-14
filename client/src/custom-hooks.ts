@@ -15,9 +15,10 @@ export function useIsVideoReady() {
       setFailed(true)
       setLoading(false)
       clearInterval(isReadyInterval)
-    }, 10000)
+    }, 25000)
 
     const isReadyInterval = setInterval(() => {
+      console.log(videoRef.current?.readyState)
       const isReady = (videoRef.current && videoRef.current?.readyState >= 3) ?? false
       if (isReady) {
         setLoading(false)

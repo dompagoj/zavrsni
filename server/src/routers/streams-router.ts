@@ -12,17 +12,14 @@ streamsRouter.get('/', isLoggedIn, (req, res) => {
   return res.status(OK).json(streamingClients.getClients())
 })
 
-streamsRouter.get('/:streamId/watch', (req, res) => {
-  // if (!(await verifyTokenFromQueryParams(req))) return res.status(UNAUTHORIZED).end()
+streamsRouter.get('/:streamId/watch', async (req, res) => {
+  if (!(await verifyTokenFromQueryParams(req))) return res.status(UNAUTHORIZED).end()
 
   const { streamId } = req.params
   const streamingClient = streamingClients.getClient(streamId)
   if (!streamingClient) return res.status(BAD_REQUEST).end()
 
   res.setHeader('Content-Type', 'video/webm')
-  // res.setHeader('Transfer-Encoding', 'chunked')
-  // res.setHeader('Connection', 'close')
-  res.setHeader('Date', new Date().toUTCString())
 
   res.write(streamingClient.header)
   streamingClient.socket.pipe(res)

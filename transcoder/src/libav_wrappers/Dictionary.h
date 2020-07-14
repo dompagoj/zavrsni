@@ -13,11 +13,6 @@ class Dictionary
 {
 
 public:
-  struct Opts
-  {
-    static constexpr auto FRAMERATE = "framerate";
-    static constexpr auto VIDEO_SIZE = "video_size";
-  };
   AVDictionary *Ptr{nullptr};
 
   Dictionary();

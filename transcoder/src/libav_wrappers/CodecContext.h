@@ -27,6 +27,9 @@ public:
   CodecContext(CodecContext&& P) noexcept;
   CodecContext& operator=(const CodecContext& Other) = delete;
 
+  AVCodecContext* operator->() { return Ptr; }
+  AVCodecContext operator*() { return *Ptr; }
+
   [[nodiscard]] av::Result<bool> Open() const;
 
   int SendPacket(av::StackPacket& Packet) const;

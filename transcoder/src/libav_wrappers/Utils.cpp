@@ -33,15 +33,15 @@ av::Result<std::string> av::Utils::FindInputDevice(AVInputFormat* InputFormat, i
 
   auto DefaultIndex = List->nb_devices - 1;
   auto ActualIndex = Index != -1 ? DefaultIndex - Index : DefaultIndex;
+
   PrintDevices(List, ActualIndex);
 
-  std::string DeviceName;
-  DeviceName = List->devices[DefaultIndex]->device_name;
-
+  std::string DeviceName = List->devices[DefaultIndex]->device_name;
   avdevice_free_list_devices(&List);
 
   return DeviceName;
 }
+
 av::Result<AVInputFormat*> av::Utils::FindInputFormat(const char* DeviceDriver)
 {
   return av_find_input_format(DeviceDriver);
@@ -51,15 +51,15 @@ void av::Utils::RegisterAllDevices() { avdevice_register_all(); }
 
 AVStream* av::Utils::FindStreamFromFormatCtx(const av::FormatContext& FormatCtx, av::MEDIA_TYPE Type)
 {
-  for (uint i = 0; i < FormatCtx.Ptr->nb_streams; i++)
+  for (unsigned int i = 0; i < FormatCtx.Ptr->nb_streams; i++)
   {
     auto Stream = FormatCtx.Ptr->streams[i];
-    auto StreamCodec = avcodec_find_decoder(Stream->codecpar->codec_id);
-    if (StreamCodec->type == Type) { return Stream; }
+    if (Stream->codecpar->codec_type == Type) { return Stream; }
   }
 
   return nullptr;
 }
+
 std::string av::Utils::GetResolutionString(const int WIDTH, const int HEIGHT)
 {
   return std::to_string(WIDTH) + "x" + std::to_string(HEIGHT);
