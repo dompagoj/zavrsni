@@ -1,2 +1,22 @@
 \section{Zaključak}
-Ovo je zaključak
+Raspberry pi zbog svojih malih dimenzija, relativno dobrih performansi te izuzetno lake prenosivosti se pokazao kao
+odličan izbor za nadzornu kameru, također širok izbor dodatnih modula nudi mogućnost velikog broja potencijalnih
+nadogradnji, primjerice mikrofon ili zvučnik.
+\paraBreak
+Sam proces živog prijenosa s druge strane, se zbog nužnog koraka kompresije videa odnosno enkodiranja dokazao
+kao jako velik izazov koji zahtjeva puno istraživanja i generalnog znanja o temi. 
+\\
+Unatoč tome rezultati samog enkodiranja govore za sebe, drastično smanjenje totalne veličine uz minimalne gubitke 
+kvalitete slike je impresivno.
+\\
+Ovaj rad je samo ogrebao površinu mogućnosti enkodiranja i ostavlja puno prostora za poboljšanja, zbog velikog izbora
+kombinacija kodeka i kontejnera te prividno beskonačno postavki istih, uz daljnje eksperimentiranje moguće je
+postići još bolje rezultate.
+\paraBreak
+Konačno poslužitelj koji je implementiran kao potpuno neovisan dio sustava kao takav omogućava laku integraciju sa
+vanjskim sustavima koristeći ustanovljene načine komunikacije kao što su TCP i HTTP što je demonstrirano sa
+implementiranim web klijentom.
+\\
+Također zbog takve neovisne arhitekture lako je moguće imati veći broj kamera spojene na isti poslužitelj koji se 
+ponaša kao središte te dalje prenosi dobivene informacije potencijalnim klijentima što je za jedan nadzorni sustav 
+ključna komponenta.
