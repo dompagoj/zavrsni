@@ -8,8 +8,6 @@ import { Stream } from '../components/Stream'
 import { Button, message } from 'antd'
 import { IStream } from '../types/http'
 
-const streams = [1, 2, 3, 4]
-
 export const StreamsScreen: React.FC = () => {
   const { data, isLoading, error } = useQuery('getStreams', getStreams)
   if (isLoading) return <div>Loading...</div>
