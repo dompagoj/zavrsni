@@ -16,7 +16,7 @@ je zadužen za autentifikaciju klijenata te prosljeđivanje paketa koje prima od
 nakon što se autoriziraju s poslužiteljom, primaju pakete videa putem HTTP-a te ih prikazuju korisniku.
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\textwidth]{flow-diagram.png}
+  \includegraphics[height=10cm, width=\textwidth]{flow-diagram.png}
   \caption{Flow diagram sustava}
 \end{figure}
 
@@ -123,6 +123,26 @@ Upravo iz tog razloga moramo imati kodek.
 \subsubsection{Podržanost}
 Za živi prijenos postoje 3 naj bolje opcije što se tiče podržanosti \cite{appleCodec} \cite{androidCodec} \cite{canIUse}
 
+\begin{center}
+  \begin{table}[h]
+    \begin{tabular}{|c|c|c|c|}
+      \hline
+      & vp8/9 + webm & h264+mp4/DASH & h264 + mkv \\
+      \hline
+      Chrome & x & x & - \\
+      Firefox & x & x & - \\
+      Safari & - & x & - \\
+      Edge & vp8 & x & - \\
+      IOS (Svi preglednici) & - & x & - \\
+      Android (Chrome) & x & x & - \\
+      \hline
+    \end{tabular}
+    \caption[Podržanost kodeka i kontejnera u raznim preglednicima]
+    {Podržanost kodeka i kontejnera u raznim preglednicima \cite{appleCodec} \cite{androidCodec} \cite{canIUse}}
+\end{table}
+
+\end{center}
+
 \myparagraph{h264 + rtmp}
 H264 je jedan od starijih kodeka i kao takav podržan je na skoro svim uređajima.
 Nudi dobar balans kvalitete i brzine. \cite{h264Book}
@@ -147,23 +167,3 @@ Najveći problem mu je Apple koji odbija implementirati ovu kombinaciju u Safari
 Također za razliku od mp4 kontejnera webm nije kodek agnostičan, to jest može se kombinirati samo sa vp8 ili vp9 kodecima. \cite{ffmpegBook}
 \paraBreak
 Upravo ova kombinacija je odabrana u ovom radu zbog svoje relativne jednostavnosti i dobre podržanosti.
-
-\begin{center}
-  \begin{table}[h]
-    \begin{tabular}{|c|c|c|c|}
-      \hline
-      & vp8/9 + webm & h264+mp4/DASH & h264 + mkv \\
-      \hline
-      Chrome & x & x & - \\
-      Firefox & x & x & - \\
-      Safari & - & x & - \\
-      Edge & vp8 & x & - \\
-      IOS (Svi preglednici) & - & x & - \\
-      Android (Chrome) & x & x & - \\
-      \hline
-    \end{tabular}
-    \caption[Podržanost kodeka i kontejnera u raznim preglednicima]
-    {Podržanost kodeka i kontejnera u raznim preglednicima \cite{appleCodec} \cite{androidCodec} \cite{canIUse}}
-\end{table}
-
-\end{center}

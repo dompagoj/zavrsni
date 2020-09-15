@@ -1,4 +1,4 @@
-\subsection{Poslužitelj}
+\subsection{Poslužitelj}\label{sec:http_api}
 Poslužitelj predstavlja vezu između transkodera\footnote{Potencijalno nekoliko njih u slučaju više kamera} odnosno same 
 kamere i klijenata.
 \paraBreak
@@ -51,10 +51,25 @@ Za pohranu korisnika koristi se \foreign{SQLite} baza podataka.
 Ova baza je odabrana primarno zbog svoje jednostavnosti, naime za razliku od ostalih baza koje funkcioniraju na
 klijent-poslužitelj modelu, ova baza je kompletno ugrađena u jednu datoteku. \cite{SQLite} \\
 Zbog jednostavnosti i malog broja entiteta poslužitelja ova baza je idealno rješenje.
+\paraBreak
+Entiteti u bazi predstavljeni su u obliku klasa, kroz \foreign{ORM} (engl. Object-Relational Mapping).
+\foreign{ORM} je tehnika manipulacije i ispitivanja baze pomoču objektno orijentirane paradigme, točnije svaka tablica
+baze predstavljena je jednim objektom ili klasom koja pomoču raznih metoda generira \foreign{SQL} upite prema bazi.
+Primjer jedne takve klase je prikazan na slici \ref{pic:orm-entity}.
+\\
+Iz sigurnosnih razloga lozinka korisnika je \footnote
+{
+  Heširanje (engl. Hashing) je proces transformiranja teksta u jedinstveni oblik iz kojega više nije moguče doći
+  do originalnog teksta. Heširanje dvaju istih tekstova uvijek mora rezultirati istim vrijednostima.
+}{heširana} 
+\foreign{Bcrypt} algoritmom. 
+U slučaju komprimiranja baze na poslužitelju napadač nemože iz tablice korisnika pročitati lozinke kao što se vidi
+na slici \ref{pic:hashed_password}.
 
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{user_entity.png}
   \caption{User entitet koji predstavlja tablicu u bazi}
+  \label{pic:orm-entity}
 \end{figure}
 
 \begin{figure}[h]
@@ -63,8 +78,9 @@ Zbog jednostavnosti i malog broja entiteta poslužitelja ova baza je idealno rje
 \end{figure}
 
 \begin{figure}[h]
-  \includegraphics[height=1.5cm, width=\textwidth]{user_table.png}
+  \includegraphics[width=\textwidth]{user_table.png}
   \caption{Tablica korisnika u bazi}
+  \label{pic:hashed_password}
 \end{figure}
 
 \clearpage
@@ -141,9 +157,9 @@ Ruta \foreign{/watch} ne očekuje JWT token u zaglavlju jer zahtjev na ovu rutu 
 \paraBreak
 Sam proces slanja videa ove rute se odvija na sljedeći način:
 \begin{enumerate}
-  \item Verifikacije tokena iz rute
+  \item Verifikacija tokena iz rute
   \item Pronalaženje kamere po identifikatoru poslanom u ruti, u slučaju da kamera ne postoji poslužitelj odmah odgovara
-    sa HHTP odgovorom 400 (bad request)
+    sa HHTP odgovorom 400 (engl. bad request)
   \item Postavljanje zaglavlja odgovora \foreign{Content-Type} na video/webm
   \item Zapisivanje zaglavlja videa iz dohvaćene kamere u odgovor
   \item Prosljeđivanje ostatka podataka iz kamere u odgovor
@@ -152,4 +168,8 @@ Sam proces slanja videa ove rute se odvija na sljedeći način:
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{watch_endpoint.png}
   \caption{HTTP ruta za slanje videa}
+  \label{pic:streaming}
 \end{figure}
+\noindent Nativna \foreign{Node js} funkcija pipe vidljiva na slici \ref{pic:streaming} može se pozvati nad bilo kojim tokom (engl. Stream) koji je tok čitanja
+te joj se također prosljedi tok koji mora biti tok čitanja, rezltat ove funkcije je prijenos podataka iz jednog toka u
+drugi.

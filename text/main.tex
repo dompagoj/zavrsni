@@ -20,6 +20,8 @@
 \usepackage{subcaption}
 \usepackage[backend=biber, sorting=none]{biblatex}
 \usepackage[bottom]{footmisc}
+\usepackage{float}
+
 
 
 \addbibresource{references.bib}
@@ -64,7 +66,7 @@
 
 \newcommand{\collegeName}{TEHNIČKO VELEUČILIŠTE U ZAGREBU}
 \newcommand{\smjer}{STRUČNI STUDIJ RAČUNARSTVA}
-\newcommand{\radTittle}{Raspberry pie sigurnosna kamera i Internet stvari}
+\newcommand{\radTittle}{Raspberry pie sigurnosna kamera}
 \newcommand{\radNumber}{}
 \newcommand{\paraBreak}{\\[0.5cm]}
 \newcommand{\myparagraph}[1]{\paragraph{#1}\mbox{}\\[6pt]}
@@ -123,7 +125,6 @@
 
 \clearpage
 
-
 \tableofcontents
 \clearpage
 \input{kratice.tex}
@@ -131,7 +132,9 @@
 \listoffigures
 
 \include{sazetak}
+
 \include{uvod}
+% \include{livestream}
 \include{pregled}
 \include{implementacija/main}
 \include{zakljucak}

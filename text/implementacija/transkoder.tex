@@ -25,7 +25,6 @@ Sve imaju polje \foreign{Ptr} koje je pokazivač na originalnu FFMpeg strukturu.
 U konstruktoru zovu \foreign{alloc} funkciju vezanu za strukturu koju omotavaju a u destruktoru \foreign{free}. Uz to još
 i implementiraju kopirni i \foreign{move} konstruktor te sve ostale funkcije koje kao prvi parametar primaju pokazivač na
 strukturu koju omotavaju, jer su to u biti metode.
-\clearpage
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{format_context_wrapper_header.png}
   \includegraphics[width=\textwidth]{format_context_wrapper.png}
@@ -33,7 +32,7 @@ strukturu koju omotavaju, jer su to u biti metode.
 \end{figure}
 \clearpage
 
-\myparagraph{Result} \label{sec:result}
+\myparagraph{Struktura za obradu greški} \label{sec:result}
 Većina funkcija iz biblioteke, u pravom duhu programiranja u jeziku C, vrača kao rezultat kod tipa \keyword[p]{int} koji
 je \textbf{negativan} ako se dogodila greška inače \textbf{0 ili pozitivan}. 
 \\
@@ -48,7 +47,7 @@ Klasa Error ima 3 polja:
   \item \keyword[p]{std::string Msg} predstavlja opis greške koja se dogodila u koliko se dogodila.
 \end{itemize}
 Radi pogodnosti ova klasa ima implementiran implicitni konstruktor koji prima \keyword[p]{int} (kod greške) i pomoću
-FFMpeg funkcije \keyword[o]{av\_make\_error\_string} postavlja polje \keyword{Code}.
+FFMpeg funkcije \keyword[o]{av\_make\_error\_string} postavlja polje \keyword{Msg}.
 \paraBreak
 Klasa Result je generična po parametru \keyword{T} i ima dva polja, 
 \\ 
@@ -68,6 +67,13 @@ Metoda \keyword[o]{Expect} prima parametar tipa \keyword{std::string\_view} i vr
 inače terminira program i ispisuje poslani parametar kao poruku uz još i poruku originalne greške. 
 \\
 Metode \keyword[o]{HasError} i  \keyword[o]{HasData} pružaju lagan način za provjeravanje ako se dogodila greška.
+\paraBreak
+Ova paradigma obrađivanja greški bez korištenja iznimki uveliko je inspirirana \textbf{Rust} programskim jezikom, u kojem
+se greške obrađuju na jako sličan način uz neke dodatne potpore samog jezika koje nije moguče implementirati u C++-u. \cite{rust}
+\paraBreak
+Na slici \ref{pic:result_example} se vidi pogodnost ovakvog pristupa, ako je potrebno u slučaju greške terminirati program
+jer je taj korak ključan za daljnju funkcionalnost to se postiže pozivom funkcije \keyword[o]{UnWrap} ili \keyword[o]{Expect}
+ako je potrebno specificirati dodatni razlog prekida.
 
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{error_ctor.png}
@@ -81,11 +87,12 @@ Metode \keyword[o]{HasError} i  \keyword[o]{HasData} pružaju lagan način za pr
   \includegraphics[width=\textwidth]{result_example1.png}
   \includegraphics[width=\textwidth]{result_example2.png}
   \caption[Primjer korištenja klase Result]{Primjer korištenja klase \keyword{Result}}
+  \label{pic:result_example}
 \end{figure}
 
 
 \clearpage
-\subsubsection{FFmpeg strukture}
+\subsubsection{Glavne strukture}
 FFmpeg dolazi s ogromnim brojem struktura, od kojih velik dio nema veze sa samom manipulacijom videa,
 u ovom poglavlju su opisane glavne strukture koji su korisne u tu svrhu.
 
@@ -96,11 +103,13 @@ slučaju Raspberry pi-a jer je operativni sustav linux to je \hyperref[sct:v4l2]
 \paraBreak
 Dohvat ove strukture je tipično prvi korak i obavlja se pozivom funkcije \\
 \keyword[o]{av\_find\_input\_format}, ona prima jedan parametar tipa \keyword[p]{const char*} koji predstavlja video upravljač.
+Video upravljač (engl. Driver) je odgovoran za standardiziranje izlaza raznih media uređaja zbog lakše integracije u
+aplikacijama.
 \begin{figure}[h]
   \includegraphics[width=\textwidth]{av_find_input_format2.png}
   \includegraphics[width=\textwidth]{av_find_input_format.png}
   \begin{subfigure}{\textwidth}
-    \includegraphics[width=\textwidth]{video_driver_constants.png}
+    \includegraphics[height=8cm, width=\textwidth]{video_driver_constants.png}
     \caption{Primarni video upravljači na raznim platformama}
   \end{subfigure}
   \caption{Dohvat strukture AVInputFormat}
@@ -267,6 +276,7 @@ kodek označava da slika sadrži čiste podatke koje nije moguće prikazati na e
 Ovakvi paketi nisu korisni jer nisu čitljivi od strane video playera, a uz to su ogromne veličine, primjerice za sliku
 veličine 1280x1024 veličina jednog paketa je 2621440 bajtova, odnosno 2.62 megabajta, za video koji se vrti
 na 24 slike u sekundi to je \textbf{40MB} po \textbf{sekundi} videa.\
+\\ Na slici \ref{pic:packet_size} je jasno vidljiv eksponencijalni rast veličine paketa sa rezolucijom.
 
 \begin{figure}[h]
   \centering
@@ -299,7 +309,7 @@ dekodiranu sliku.
   \caption{Dekodiranje paketa iz kamere}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \begin{tikzpicture}
     \begin{axis}[
@@ -316,10 +326,9 @@ dekodiranu sliku.
     \addplot coordinates {(640x480,0.614) (800x600, 0.96) (1280x1024, 2.6214)};
     \end{axis}
   \end{tikzpicture}
-  \caption{Graf veličine \foreign{raw} paketa iz kamere na raznim rezolucijama} \label{pic:packet_size}
+  \caption{Graf veličine \foreign{raw} paketa iz kamere na raznim rezolucijama} 
+  \label{pic:packet_size}
 \end{figure}
-\clearpage
-
 
 \subsubsection{Enkodiranje slika} \label{sec:encoding}
 \myparagraph{Konfiguracija enkodera}
@@ -360,7 +369,7 @@ Nad samim kodekom moguće je podesiti ogroman broj postavki, najbitnije od kojih
     i veličinu finalne slike. Veća vrijednost znači bolja slika ali isto tako i veća slika.
   \item \keyword[p]{crf} - \foreign{crf} ili \foreign{Constant Rate Factor} se odnosi na varijabilni \foreign{bit\_rate}
     odnosno enkoder pokušava održavati konzistentnu kvalitetu slike i sukladno time sam odlučuje o vrijednosti 
-    \foreign{bit\_rate}-a. \\
+    \foreign{bit\_rate}-a. \label{sec:crf} \\
     Podržane vrijednosti ovise do kodeka, u slučaju \foreign{VP9} 0-63, neovisno o kodeku doduše,
     manja vrijednost predstavlja bolju sliku uz veći prosječni \foreign{bit\_rate}
 \end{itemize}
@@ -370,7 +379,7 @@ Nad samim kodekom moguće je podesiti ogroman broj postavki, najbitnije od kojih
   \caption{Konfiguracija enkodera}
 \end{figure}
 \noindent
-Prije nego se dobivena slika \footnote{Slika dobivena od dekodera} može enkodirati, mora joj se promijeniti piksel format. \\
+Prije nego se dobivena \footnote{Slika dobivena od dekodera}{slika} može enkodirati, mora joj se promijeniti piksel format. \\
 \foreign{VP9} enkoder zahtjeva \foreign{planarni} \ref{sec:slika} piksel format što piksel format slike dobivene iz 
 kamere nije. \\
 Ovaj proces zahtjeva prilično ne jasnu matematiku, srećom FFMpeg \ref{sec:ffmpeg} nudi pomočnu
@@ -406,9 +415,7 @@ kretnje u slici. \\
 Ako ove vrijednosti usporedimo s primjerom navedenim u \ref{sec:size_problem} konačna veličina bila bi otprilike 
 \textbf{71 MB} u usporedbi sa \textbf{62.2 GB}
 
-\clearpage
-
-\begin{figure}
+\begin{figure}[H]
   \includegraphics[width=\textwidth, height=15cm]{keyframes.png}
   \caption{Ispis kodeka}
 \end{figure}
@@ -521,7 +528,10 @@ nema smisla. \cite{ffmpegDocs}
   \centering
   \includegraphics[width=0.75\textwidth]{video_details.png}
   \caption{Ispravno zapisano zaglavlje datoteke}
+  \label{pic:file_props}
 \end{figure}
+Iz slike \ref{pic:file_props} se vidi da su svi bitni metapodaci pravilno postavljeni, \foreign{Bit rate} je N/A jer
+je podešen crf \ref{sec:crf} dok ostali kao godina autor i sl, su potpuno opcionalni i ne utječu na funkcionalnost.
 
 \clearpage
 \myparagraph{Slanje}
@@ -535,7 +545,7 @@ slika u sekundi veći od 1000 ako se prezentacijske oznake ne usklade.
 \paraBreak
 Usklađivanje prezentacijskih oznaka se radi funkcijom \keyword[o]{av\_rescale\_q}, ona prima \foreign{time\_base} enkodera
 i \foreign{time\_base} odredišnog video toka te vrača korektnu vrijednost prezentacijske oznake.
-\begin{figure}[h]
+\begin{figure}[H]
   \includegraphics[width=\textwidth]{pts_sync.png}
   \caption{Usklađivanje prezentacijskih oznaka}
 \end{figure}

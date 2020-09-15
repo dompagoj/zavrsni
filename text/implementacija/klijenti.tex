@@ -15,11 +15,13 @@ podataka odgovara s JWT tokenom \ref{sec:jwt}, zatim je korisnik preusmjeren na 
 \end{figure}
 
 \subsubsection{Prikaz živih prijenosa}
-Prvi korak u prikazu prijenosa je zahtjev na poslužitelj za dohvat liste svih dostupnih kamera i njihovih identifikatora. \\
-Zatim se za svaku od kamera kreira video element kojem se izvor postavi na odgovarajuću rutu za 
-gledanje \ref{sec:routes} ovisno o identifikatoru kamere
+Prvi korak u prikazu prijenosa je zahtjev na poslužitelj za dohvat liste svih dostupnih kamera i njihovih identifikatora. 
+Ovaj zahtjev očekuje \foreign{JWT} token u \foreign{Authorization} zaglavlju samog zahtjeva.
+\\
+Odgovor poslužitelja predstavlja popis svih kamera u obliku \foreign{array-a}, za svaku od kamera kreira se \foreign{HTML} 
+video element kojem se izvor postavi na odgovarajuću rutu za gledanje \ref{sec:routes} ovisno o identifikatoru kamere
 
-\begin{figure}
+\begin{figure}[h]
   \includegraphics[width=\textwidth]{react_stream_list_comp.png}
   \includegraphics[width=\textwidth]{react_stream_comp.png}
   \caption{Implementacija u react-u}
