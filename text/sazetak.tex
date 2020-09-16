@@ -4,6 +4,10 @@ Ovaj rad bavi se implementacijom sigurnosne kamere koristeći raspberry pi s kam
 te živim prijenosom videa iste raznim klijentima.
 \paraBreak
 Projekt se sastoji od 3 glavna sustava \textbf{Transkoder}, \textbf{Poslužitelj}, \textbf{Klijenti}
+\\
+Osnovna ideja je da transkoder uživo čita slike iz spojene kamere te ih,  jer su ne prenosive zbog svoje veličine enkodira
+nekim odabranim kodekom, u slučaju ovog rada to je VP9, rezultat čega je drastično manja veličina pojedine slike. Zatim
+takve slike šalje putem TCP protokola na poslužitelj koji ih dalje servira potencijalnim korisnicima kao što su web preglednik.
 \paraBreak
 Kroz rad su opisana sva 3 dijela sustava te njihove međusobne interakcije, funkcionalnosti te dizajn.
 \paraBreak

@@ -2,5 +2,6 @@
   "editor.formatOnSave": false,
   "latex-workshop.message.log.show": true,
   "latex-workshop.message.error.show": true,
-  "latex-workshop.latex.outDir": "%DIR%/build"
+  "latex-workshop.latex.outDir": "%DIR%/build",
+  "workbench.statusBar.visible": true
 }

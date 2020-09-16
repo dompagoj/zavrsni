@@ -97,7 +97,7 @@ FFmpeg dolazi s ogromnim brojem struktura, od kojih velik dio nema veze sa samom
 u ovom poglavlju su opisane glavne strukture koji su korisne u tu svrhu.
 
 % \clearpage
-\myparagraph{AVInputFormat} \label{sec:input_format}
+\myparagraph{Struktura AVInputFormat} \label{sec:input_format}
 Struktura \keyword{AVInputFormat} sama po sebi nema velik značaj, predstavlja sposobnosti odabranog video upravljača, u
 slučaju Raspberry pi-a jer je operativni sustav linux to je \hyperref[sct:v4l2]{\foreign{v4l2}}. \cite{ffmpegDocs} \cite{linuxKernelDocs}
 \paraBreak
@@ -116,14 +116,14 @@ aplikacijama.
 \end{figure}
 
 \clearpage
-\myparagraph{AVFormatContext} \label{sec:avformat_context}
+\myparagraph{Struktura AVFormatContext} \label{sec:avformat_context}
 Struktura \keyword{AVFormatContext} koja može biti ulazna ili izlazna služi za konfiguriranje ulaznog multimedijskog
 uređaja ili datoteke, to jest ako je izlazna za konfiguriranje strukture i destinacije izlazne datoteke. 
 \\
 Primjerice sadrži sve struje (\keyword{AVStream}) podataka od izvora multimedije. U slučaju Raspberry pi kamere riječ je o samo
 jednoj struji tipa video. \cite{ffmpegDocs}
 
-\myparagraph{AVStream} \label{sec:avstream}
+\myparagraph{Struktura AVStream} \label{sec:avstream}
 Struktura \keyword{AVStream} predstavlja struju podataka nekog izvora. 
 \\
 Ako imamo multimedijsku datoteku s videom i zvukom znači da ona sadrži dva \keyword{AVStream}-a jedan tipa Video i jedan
@@ -133,7 +133,7 @@ tipa Audio \cite{ffmpegDocs}
   \caption[Enumeracija svih tipova media struja]{Enumeracija svih tipova media struja \cite{ffmpegDocs}}
 \end{figure}
 
-\myparagraph{AVCodec} \label{sec:avcodec}
+\myparagraph{Struktura AVCodec} \label{sec:avcodec}
 Struktura \keyword{AVCodec} predstavlja kodek \ref{sec:codec}, može biti enkoder ili dekoder, ovisno o tipu kojeg želimo dohvaća se
 funkcijama \keyword[o]{avcodec\_find\_encoder} ili 
 \\ 
@@ -151,17 +151,17 @@ koristi se struktura \keyword{AVCodecContex}.
 \input{implementacija/tablica-kodeka.tex}
 
 \clearpage
-\myparagraph{AVCodecContext} \label{sec:avcodec_context}
+\myparagraph{Struktura AVCodecContext} \label{sec:avcodec_context}
 Struktura \keyword{AVCodecContext} služi kao kontejner kodeka, skroz ovu strukturu se podešavaju sve postavke kodeka
 kao što su broj slika u sekundi, visina slike, širina slike i mnoge druge ovisno o samom kodeku. \\
 Sve funkcije vezane za dekodiranje ili enkodiranje primaju ovu strukturu kao prvi parametar te ovisno o postavkama iste,
 enkodiraju ili dekodiraju slike na određeni način.
 
-\myparagraph{AVIOContext} \label{sec:aviocontext}
+\myparagraph{Struktura AVIOContext} \label{sec:aviocontext}
 Struktura \keyword{AVIOContext} dio je izlaznog \keyword{AVFormatContext}-a i predstavlja finalno odredište enkodiranih
 paketa, u slučaju ovoga rada to je TCP poslužitelj ali može biti i putanja na disku ili neki drugi mrežni protokol.
 
-\myparagraph{AVFrame} \label{sec:av_frame}
+\myparagraph{Struktura AVFrame} \label{sec:av_frame}
 Struktura \keyword{AVFrame} predstavlja jednu dekodiranu sliku videa. 
 \\
 Ovu strukturu dekoder vrača nakon dekodiranja, te ju isto tako enkoder prima kao parametar. \cite{ffmpegDocs}
@@ -178,18 +178,18 @@ Ima velik broj polja, naj važniji od kojih su:
   \item \keyword[p]{linesize} veličina svake od ravnina slike u bajtovima. \ref{sec:planar}
 \end{itemize}
 
-\myparagraph{AVPacket} \label{sec:av_packet}
+\myparagraph{Struktura AVPacket} \label{sec:av_packet}
 Struktura \keyword{AVPacket} predstavlja enkodirani paket, odnosno jednu enkodiranu sliku videa. \\
 Ova struktura dobiva se kao rezultat enkodiranja slike i šalje se na odredišnu lokaciju specificiranu kroz 
 \keyword{AVIOContext} strukturu \ref{sec:aviocontext} \\
 
-\myparagraph{SwsContext} \label{sec:sws_context}
+\myparagraph{Struktura SwsContext} \label{sec:sws_context}
 Struktura \keyword{SwsContext} služi za razne manipulacije pojedinačnim slikama videa, naj bitnije, funkcija
 \keyword[o]{sws\_scale} kojom je moguće promijeniti piksel format ili veličinu/širinu slike. \\
 Za instanciranje koristi se funkcija \keyword[o]{sws\_getContext} koja prima izvornu visinu i širinu i izvorni
 piksel format, te proizvoljne odredišne iste parametre, zatim raznim vezanim funkcijama radi pretvorbe.
 
-\myparagraph{AVRational} \label{sec:av_rational}
+\myparagraph{Struktura AVRational} \label{sec:av_rational}
 Struktura \keyword{AVRational} predstavlja razlomak, ima dva polja \keyword[p]{num} i \keyword[p]{den}, num ili numerator
 je brojnik a den ili denumerator je djelitelj.
 \paraBreak
@@ -201,7 +201,7 @@ FFMpeg koristi ovakvu strukturu a ne \keyword[p]{float} brojeve jer su operacije
 i ne potpuno precizne ovisno o broju decimala a priroda nekih od dijelova procesa enkodiranja zahtjeva izrazito 
 točne kalkulacije. \cite{ffmpegDocs}
 
-\myparagraph{AVDictionary}
+\myparagraph{Struktura AVDictionary}
 Struktura \keyword{AVDictionary} predstavlja ključ - vrijednost mapu implementiranu u jeziku C. Ona se koristi za
 prosljeđivanje većine postavki ostalih struktura.
 
@@ -407,11 +407,56 @@ vrača enkodirani paket.
   \caption{Enkodiranje slike}
 \end{figure}
 \noindent
-Rezultat enkodiranja je slika znatno manje veličine, primjerice paket koji je došao iz kamere veličine 
-\textbf{0.96 MB} sada je velik samo \textbf{10-20 KB}, što je nevjerojatna razlika.\\
+Rezultat enkodiranja je slika znatno manje veličine, ovo je odlično vidljivo na slici \ref{graf:packet_size}, primjerice 
+paket koji je došao iz kamere veličine  \textbf{0.96 MB} sada je velik samo \textbf{10-20 KB}, što je nevjerojatna razlika.
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      ybar,
+      enlargelimits=0.15,
+      legend style={at={(0.5,-0.15)},
+        anchor=north,legend columns=-1},
+      ylabel={Veličina (\textbf{B})},
+      symbolic x coords={640x480,800x600,1280x1024},
+      xtick=data,
+      nodes near coords align={vertical},
+      ]
+    \addplot coordinates {(640x480,614400) (800x600, 960000) (1280x1024, 2621440)};
+    \addplot coordinates {(640x480,13497) (800x600, 14409) (1280x1024, 26066)};
+    \addplot coordinates {(640x480,1781) (800x600, 1821) (1280x1024, 3286)};
+    \legend{Raw, Enkodirana I slika, Enkodirana P slika}
+    \end{axis}
+  \end{tikzpicture}
+  \caption[Graf usporedbe veličina paketa prije i poslije enkodiranja]{Graf usporedbe veličina paketa prije i poslije enkodiranja u \textbf{bajtovima}} \label{pic:packet_size}
+  \label{graf:packet_size}
+\end{figure}
+\\
 Međutim ta vrijednost predstavlja I sliku \ref{sec:slika}, koja se pojavljuje \footnote{Ovisno o konfiguraciji} svakih 15
 paketa, P slika s druge strane je još znatno manja te varira između \textbf{100 B} do \textbf{5 KB} ovisno o količini
-kretnje u slici. \\
+kretnje u slici, ova razlika je također bolje vidljiva na slici \ref{graf:graf_ip_frames}.
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    \begin{axis}[
+      ybar,
+      enlargelimits=0.15,
+      legend style={at={(0.5,-0.15)},
+        anchor=north,legend columns=-1},
+      ylabel={Veličina (\textbf{B})},
+      symbolic x coords={640x480,800x600,1280x1024},
+      xtick=data,
+      nodes near coords align={vertical},
+      ]
+    \addplot coordinates {(640x480,13497) (800x600, 14409) (1280x1024, 26066)};
+    \addplot coordinates {(640x480,1781) (800x600, 1821) (1280x1024, 3286)};
+    \legend{I slika, P slika}
+    \end{axis}
+  \end{tikzpicture}
+  \caption[Graf usporedbe veličina I i P slika]{Graf usporedbe veličina I te P slika u \textbf{bajtovima}} \label{pic:pict_type}
+  \label{graf:graf_ip_frames}
+\end{figure}
+\noindent
 Ako ove vrijednosti usporedimo s primjerom navedenim u \ref{sec:size_problem} konačna veličina bila bi otprilike 
 \textbf{71 MB} u usporedbi sa \textbf{62.2 GB}
 
@@ -435,51 +480,6 @@ Ako ove vrijednosti usporedimo s primjerom navedenim u \ref{sec:size_problem} ko
 \end{table}
 \end{center}
 
-\begin{figure}[h]
-  \centering
-  \begin{tikzpicture}
-    \begin{axis}[
-      ybar,
-      enlargelimits=0.15,
-      legend style={at={(0.5,-0.15)},
-        anchor=north,legend columns=-1},
-      ylabel={Veličina (\textbf{B})},
-      symbolic x coords={640x480,800x600,1280x1024},
-      xtick=data,
-      nodes near coords align={vertical},
-      ]
-    \addplot coordinates {(640x480,614400) (800x600, 960000) (1280x1024, 2621440)};
-    \addplot coordinates {(640x480,13497) (800x600, 14409) (1280x1024, 26066)};
-    \addplot coordinates {(640x480,1781) (800x600, 1821) (1280x1024, 3286)};
-    \legend{Raw, Enkodirana I slika, Enkodirana P slika}
-    \end{axis}
-  \end{tikzpicture}
-  \caption[Graf usporedbe veličina paketa prije i poslije enkodiranja]{Graf usporedbe veličina paketa prije i poslije enkodiranja u \textbf{bajtovima}} \label{pic:packet_size}
-\end{figure}
-
-\begin{figure}[h]
-  \centering
-  \begin{tikzpicture}
-    \begin{axis}[
-      ybar,
-      enlargelimits=0.15,
-      legend style={at={(0.5,-0.15)},
-        anchor=north,legend columns=-1},
-      ylabel={Veličina (\textbf{B})},
-      symbolic x coords={640x480,800x600,1280x1024},
-      xtick=data,
-      nodes near coords align={vertical},
-      ]
-    \addplot coordinates {(640x480,13497) (800x600, 14409) (1280x1024, 26066)};
-    \addplot coordinates {(640x480,1781) (800x600, 1821) (1280x1024, 3286)};
-    \legend{I slika, P slika}
-    \end{axis}
-  \end{tikzpicture}
-  \caption[Graf usporedbe veličina I i P slika]{Graf usporedbe veličina I te P slika u \textbf{bajtovima}} \label{pic:pict_type}
-\end{figure}
-\clearpage
-
-\clearpage
 \subsubsection{Slanje enkodiranih paketa kroz mrežu}
 \myparagraph{Konfiguracija izlaznog formata}
 Izlazni format se konfigurira kroz strukturu \keyword{AVFormatContext} \ref{sec:avformat_context}, potrebno ju je

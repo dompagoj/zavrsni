@@ -7,6 +7,7 @@ Cijeli sustav je rastavljen u 3 glavna dijela
   \item Poslužitelj
   \item Klijenti
 \end{itemize}
+Način međusobne interakcije između ova tri dijela sustava je jasno vidljiv na slici \ref{pic:flow_diagram}
 \paragraph{Transkoder}
 je zadužen za primanje podataka od kamere i transformiranje istih u format koji je odgovarajuć za najveći broj klijenata, 
 te slanje u realnom vremenu na poslužitelj putem TCP-a.
@@ -16,20 +17,21 @@ je zadužen za autentifikaciju klijenata te prosljeđivanje paketa koje prima od
 nakon što se autoriziraju s poslužiteljom, primaju pakete videa putem HTTP-a te ih prikazuju korisniku.
 \begin{figure}[h]
   \centering
-  \includegraphics[height=10cm, width=\textwidth]{flow-diagram.png}
+  \includegraphics[height=9cm, width=\textwidth]{flow-diagram.png}
   \caption{Flow diagram sustava}
+  \label{pic:flow_diagram}
 \end{figure}
 
 \clearpage
 \subsection{Tehnologije}
 
-\subsubsection{C++}
+\subsubsection{Programski jezik C++}
 C++ je odabran za implementaciju transkodera, primarno zato što su FFMpeg biblioteke napisane u jeziku C 
 s kojim se C++ vrlo jednostavno integrira ali i zbog manjka memorije Raspberry pi-a i teške prirode posla kojeg obavlja
 u smislu potrebne snage procesora zbog čega je bitno imati jezik koji se prevodi u nativni kod ovisno o platformi te koji
 je memorijski učinkovit. \cite{bStrou}
 
-\subsubsection{Node JS}
+\subsubsection{Okruženje Node JS}
 Node JS je \foreign{open-source cross-platform runtime} za JavaScript. \\
 Omogućuje pisanje poslužiteljskog koda u jeziku JavaScript. \cite{nodeBook}
 \paraBreak
@@ -37,7 +39,7 @@ Idealan je za poslužitelja ovog projekta zbog svog \foreign{event-driven} asink
 Priroda posla koju poslužitelj obavlja ne zahtijeva veliku procesnu snagu nego mogućnost serviranja velikog broja zahtjeva
 paralelno, \foreign{Node JS} se upravo u takvom tipu posla ističe. \cite{nodeBook}
 
-\subsubsection{React JS}
+\subsubsection{Biblioteka React JS}
 React JS je \foreign{open-source} JavaScript biblioteka za izradu web aplikacija.
 \paraBreak
 Izabran je za implementaciju primjera web klijenta jer je klijent zamišljen da bude dinamična web aplikacija a ne statička
@@ -76,7 +78,7 @@ svakih 10 sekundi ili 900 slika, tada bi video bilo moguće premotavati naprijed
 Stoga ako je bitno da se video može premotavati u malim intervalima mora se postaviti Interval \foreign{I} 
 slika na što manju vrijednost.
 
-\subsubsection{Piksel format} \label{sec:pixelformat}
+\subsubsection{Način zapisa slike} \label{sec:pixelformat}
 Piksel format je format ili način na koji je svaki pojedinačni piksel slike zapisan odnosno opisuje kako su podaci o boji
 svakog piksela enkodirani. Primjerice piksel format \foreign{24 bit RGB} još poznat kao \foreign{RGB888} 
 zauzima 3 bajta po pikselu, jedan bajt za svaki od kanala.
@@ -106,7 +108,7 @@ Primjeri nekih kontejnera su:
 \end{itemize}
 
 \subsubsection{Kodek} \label{sec:codec}
-Kodek je softver (ili hardver) koji služi za kompresiju ili dekompresiju videa. \\
+Kodek je program (ili sklopovlje) koji služi za kompresiju ili dekompresiju videa. \\
 Pretvara ne kompresiran (\foreign{Raw}) video u kompresiran i obratno. \\
 Ako je riječ o kompresiranju onda je to enkoder, inače dekoder. \cite{ffmpegBook}
 \paraBreak
@@ -120,7 +122,7 @@ Veličina takvog videa bez enkodiranja bila bi \textbf{268.7 GB} \label{sec:size
 \paraBreak
 Upravo iz tog razloga moramo imati kodek.
 
-\subsubsection{Podržanost}
+\subsubsection{Podržanost kodeka i kontejnera u raznim preglednicima}
 Za živi prijenos postoje 3 naj bolje opcije što se tiče podržanosti \cite{appleCodec} \cite{androidCodec} \cite{canIUse}
 
 \begin{center}
@@ -143,20 +145,20 @@ Za živi prijenos postoje 3 naj bolje opcije što se tiče podržanosti \cite{ap
 
 \end{center}
 
-\myparagraph{h264 + rtmp}
+\myparagraph{Kodek h264 i kontejner rtmp}
 H264 je jedan od starijih kodeka i kao takav podržan je na skoro svim uređajima.
 Nudi dobar balans kvalitete i brzine. \cite{h264Book}
 \paraBreak
 Rtmp kontejner je jedan od naj korištenijih kontejnera za živi prijenos, jedan od korisnika je Twitch.tv \\
 Problem ovog kontejnera je sto je vlasnik Adobe i nije besplatan, uz to nije podržan nativno u HTML5 video elementu.
 
-\myparagraph{h264 + mp4}
+\myparagraph{Kodek h264 i kontejner mp4}
 U teoriji odlična kombinacija jer je mp4 kontejner podržan virtualno svugdje.
 \paraBreak
 Nažalost mp4 ne podržava živi prijenos jer mora unaprijed znati točnu duljinu videa što kod živog prijenosa nije moguće. \\
 Rješenje je MPEG-DASH (Dynamic Adaptive Streaming over HTTP). Proces razdvajanja videa u manje cjeline s poznatom veličinom.
 
-\myparagraph{vp8/9 + webm}
+\myparagraph{Kodek vp8/9 i kontejner webm}
 Ovu kombinaciju kodeka i kontejnera je implementirao Google, želeći izbjeći troškove licenci za 264/5 kodek. \\
 Glavna snaga mu je odlična kompatibilnost s nativnim HTML 5 video elementom koji je standard u većini preglednika \cite{ffmpegBook}
 \paraBreak

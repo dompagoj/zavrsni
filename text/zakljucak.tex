@@ -4,19 +4,26 @@ odličan izbor za nadzornu kameru, također širok izbor dodatnih modula nudi mo
 nadogradnji, primjerice mikrofon ili zvučnik.
 \paraBreak
 Sam proces živog prijenosa s druge strane, se zbog nužnog koraka kompresije videa odnosno enkodiranja dokazao
-kao jako velik izazov koji zahtjeva puno istraživanja i generalnog znanja o temi. 
+kao jako velik izazov koji zahtjeva puno istraživanja i generalnog znanja o temi. Biblioteka korištena za enkodiranje
+iako omogućuje cijeli proces jako je nezgodna za korištenje zbog sirovog sučelja izloženog korisniku te zahtjeva
+puno dodatnog truda oko razumijevanja ogromnog broja struktura i funkcija koje su dio iste.
 \\
-Unatoč tome rezultati samog enkodiranja govore za sebe, drastično smanjenje totalne veličine uz minimalne gubitke 
-kvalitete slike je impresivno.
+Unatoč tome rezultati samog enkodiranja govore za sebe, kao što je vidljivo na slici \ref{graf:packet_size} 
+drastično smanjenje totalne veličine uz minimalne gubitke  kvalitete slike je impresivno.
 \\
 Ovaj rad je samo ogrebao površinu mogućnosti enkodiranja i ostavlja puno prostora za poboljšanja, zbog velikog izbora
 kombinacija kodeka i kontejnera te prividno beskonačno postavki istih, uz daljnje eksperimentiranje moguće je
 postići još bolje rezultate.
+\\
+Osim poboljšanja u području enkodiranja može se znatno poboljšati integracija, primjerice transkoder ili poslužitelj 
+bi na raznim koracima mogli slati zahtjeve na poveznice definirane od strane korisnika, takozvani \foreign{web hook}-ovi.
 \paraBreak
 Konačno poslužitelj koji je implementiran kao potpuno neovisan dio sustava kao takav omogućava laku integraciju sa
 vanjskim sustavima koristeći ustanovljene načine komunikacije kao što su TCP i HTTP što je demonstrirano sa
 implementiranim web klijentom.
 \\
-Također zbog takve neovisne arhitekture lako je moguće imati veći broj kamera spojene na isti poslužitelj koji se 
-ponaša kao središte te dalje prenosi dobivene informacije potencijalnim klijentima što je za jedan nadzorni sustav 
-ključna komponenta.
+Također zbog takve neovisne arhitekture lako je moguće imati veći broj kamera spojene na isti centralni poslužitelj 
+koji se ponaša kao središte te dalje putem HTTP-a prenosi dobivene informacije potencijalnim klijentima što je za jedan 
+nadzorni sustav ključna komponenta. U ovom dijelu arhitekture također ima mjesta za daljnji razvoj, primjerice jedna on 
+originalnih ideja ovog rada je bila da poslužitelj prosljeđuje dobivene slike od transkodera nekom trećem djelu sustava koji
+bi detektirao potencijalne točke interesa na slici te ih označio, u suštini prepoznavanje lica osoba ili nešto slično.
